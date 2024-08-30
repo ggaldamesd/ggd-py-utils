@@ -18,8 +18,13 @@ setup(
     ],
     python_requires=">=3.6",
     install_requires=[
-        "numpy>=1.21.0",
-        "pandas>=1.3.0",
-        "requests>=2.26.0"
+        "unidecode==1.3.8",
+        "nltk==3.8.1",
+        "pandas==2.2.2",
+        "tqdm==4.66.2",
+        "imbalanced-learn==0.12.3",
+        "scikit-learn==1.5.0",
+        "colorama==0.4.6",
+        "chime==0.7.0"
     ],
 )
