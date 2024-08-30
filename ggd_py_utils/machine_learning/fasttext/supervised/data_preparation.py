@@ -18,7 +18,7 @@ def text_label_to_numeric(df:DataFrame, label_code_name:str) -> DataFrame:
     return df
 
 def label_concatenation(df:DataFrame, label_code_name:str, label_name:str) -> DataFrame:
-    df["Label"] = concat(objs=[df[label_code_name].astype(dtype=str), df[label_name]], axis=1)
+    df["Label"] = df[label_code_name].astype(str) + ' ' + df[label_name].astype(str)
     df["Label"] = df["Label"].progress_apply("|".join, axis=1)
     
     return df
