@@ -154,7 +154,7 @@ def train_fasttext_model_with_hyperparameter(
     model:_FastText
     
     supervised_default:dict = {
-        'model': "supervised",
+        # 'model': "supervised",
         'lr': 0.05,
         'dim': 100,
         'ws': 5,

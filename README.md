@@ -41,7 +41,7 @@ The package requires the following dependencies:
 
 To install the package, run the following command:
 ```bash
-pip uninstall ggd-py-utils; pip install git+https://github.com/ggaldamesd/ggd-py-utils.git
+pip uninstall ggd-py-utils -y; pip install git+https://github.com/ggaldamesd/ggd-py-utils.git
 ```
 **Updating**
 
@@ -53,5 +53,5 @@ pip install --upgrade git+https://github.com/ggaldamesd/ggd-py-utils.git
 
 To uninstall the package, run the following command:
 ```bash
-pip uninstall ggd-py-utils
+pip uninstall ggd-py-utils -y
 ```
