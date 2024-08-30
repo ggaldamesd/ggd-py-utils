@@ -2,13 +2,25 @@
 
 Un conjunto de utilidades para proyectos de Python.
 
+## Propósito del Paquete
+
+El objetivo de este paquete es proveer una serie de utilidades reutilizables para proyectos de Python. Estas utilidades se organizan en diferentes módulos y directorios, cada uno con su propósito específico.
+
 ## Contenido del Paquete
 
 El paquete `ggd_py_utils` incluye las siguientes utilidades:
 
-* **Tracing**: funciones para medir el tiempo de ejecución de bloques de código.
-* **Machine Learning**: utilidades para preparar datos y entrenar modelos de clasificación supervisada con FastText.
-* **Formating**: funciones para formatear números y texto.
+### Tracing
+
+Las utilidades de tracing se utilizan para medir el tiempo de ejecución de bloques de código. Esto es útil para identificar cuellos de botella en el rendimiento de tu aplicación.
+
+### Machine Learning
+
+Las utilidades de machine learning se utilizan para preparar datos y entrenar modelos de clasificación supervisada con FastText. Estas utilidades incluyen scripts para entrenar modelos y preparar datos para su uso en modelos de clasificación.
+
+### Formating
+
+Las utilidades de formating se utilizan para formatear números y texto. Estas utilidades incluyen funciones para formatear números de manera legible y para abreviar grandes números.
 
 ## Estructura del Paquete
 

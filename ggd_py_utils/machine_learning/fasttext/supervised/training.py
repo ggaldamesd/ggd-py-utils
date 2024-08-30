@@ -2,6 +2,7 @@ from fasttext.FastText import _FastText
 from fasttext import train_supervised
 from multiprocessing import cpu_count
 
+from ggd_py_utils.tracing.file import get_file_size
 from ggd_py_utils.tracing.metrics import time_block
 
 def train_fasttext_model(
@@ -27,18 +28,17 @@ def train_fasttext_model(
     auto_tune_model : bool, optional
         If True, the hyperparameters of the model will be tuned using the autotune feature of the FastText library, by default False.
     threads : int, optional
-        The number of threads to use during training, by default the number of CPUs available.
+        The number of threads to use, by default the number of CPUs available.
     autotune_duration_in_minutes : int, optional
-        The duration of the autotuning process in minutes, by default 5.
+        The duration of the autotune process in minutes, by default 5 minutes.
     autotune_model_size_in_mb : int, optional
-        The size of the model in megabytes, by default 250.
+        The size of the model in megabytes, by default 250MB.
 
     Returns
     -------
     _FastText
-        The trained FastText model.
+        The trained model.
     """
-
     model:_FastText
     
     if auto_tune_model:
@@ -63,13 +63,25 @@ def train_fasttext_model(
                 verbose=3,
                 thread=threads
             )
+            
+        if not model.is_quantized(): 
+            with time_block(block_name="Quantizing model"):
+                model.quantize()
 
     with time_block(block_name="Getting model metrics"):
         metrics = model.test(path=validation_corpus_path, threshold=0.0)
 
-    print(f"Número de ejemplos: {metrics[0]}")
-    print(f"Precisión: {metrics[1]}")
-    print(f"Recall: {metrics[2]}")
+    print(f"Model samples: {metrics[0]}")
+    print(f"Model precision: {metrics[1]}")
+    print(f"Model recall: {metrics[2]}")
 
+    model_dimensions = model.get_dimension()
+    print(f"Model dimensions: {model_dimensions}")
+    
     model.save_model(model_file)
+
+    _, model_size = get_file_size(filename=model_file)
+
+    print(f"Model size: {model_size}")
+    
     return model
