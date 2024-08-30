@@ -26,6 +26,6 @@ setup(
         "scikit-learn==1.5.0",
         "colorama==0.4.6",
         "chime==0.7.0",
-        "numpy==1.19.0"
+        "numpy==1.26.4"
     ],
 )
