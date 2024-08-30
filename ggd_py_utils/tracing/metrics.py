@@ -7,6 +7,19 @@ theme(name="mario")
 
 @contextmanager
 def time_block(block_name:str=""):
+    """
+    Context manager to measure the execution time of a code block.
+
+    This context manager will print the execution time of the block of code
+    inside the with statement in seconds with four decimal places.
+
+    Parameters
+    ----------
+    block_name : str, optional
+        The name of the block to be printed before the execution time.
+
+    """
+    
     start_time: float = time()
     yield
     elapsed_time: float = time() - start_time

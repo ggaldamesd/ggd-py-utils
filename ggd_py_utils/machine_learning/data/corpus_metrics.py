@@ -5,6 +5,16 @@ from ggd_py_utils.formating.numeric import abbreviate_large_number
 from ggd_py_utils.tracing.metrics import time_block
 
 def get_words_and_subwords_counts(filename:str, ngram_range:tuple=(2, 6)) -> dict:
+    """
+    Reads a file and counts the number of words and subwords (ngrams) in the text.
+
+    Args:
+        filename (str): The path to the file to read.
+        ngram_range (tuple, optional): The range of n values to use when generating ngrams. Defaults to (2, 6).
+
+    Returns:
+        dict: A dictionary containing the number of words and subwords in the text, and their abbreviations.
+    """
     text:str = ""
 
     with time_block(block_name="Read File"):
