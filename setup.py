@@ -25,6 +25,7 @@ setup(
         "imbalanced-learn==0.12.3",
         "scikit-learn==1.5.0",
         "colorama==0.4.6",
-        "chime==0.7.0"
+        "chime==0.7.0",
+        "numpy==1.19.0"
     ],
 )
