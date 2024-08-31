@@ -228,7 +228,7 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         The balanced DataFrame.
     """
     from pandas import concat, Series, get_dummies
-    from imblearn.over_sampling import RandomOverSampler, SMOTE, SMOTENC
+    from imblearn.over_sampling import RandomOverSampler, SMOTE, SMOTEN
     from imblearn.under_sampling import RandomUnderSampler
     from sklearn.utils.class_weight import compute_class_weight
     
@@ -250,7 +250,7 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
     elif method == "smotec":
         categorical_columns: list[str] = X.select_dtypes(include=["object", "category"]).columns.tolist()
     
-        smotec = SMOTENC(categorical_features=[X.columns.get_loc(col) for col in categorical_columns],
+        smotec = SMOTEN(categorical_features=[X.columns.get_loc(col) for col in categorical_columns],
                          sampling_strategy="auto", random_state=42)
         X_balanced, y_balanced = smotec.fit_resample(X, y)
 
