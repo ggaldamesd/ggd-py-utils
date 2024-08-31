@@ -206,29 +206,58 @@ def get_minimal_corpus_dataframe(df:DataFrame):
     
     return df
 
-def balance_training_data(df:DataFrame) -> DataFrame:
+def balance_training_data(df: DataFrame, method: str = "oversampling") -> DataFrame:
     """
-    Balance the training data using the RandomOverSampler from imbalanced-learn.
-
+    Balance the training data using different techniques based on the specified method.
+    
     Parameters
     ----------
     df : DataFrame
         The DataFrame to balance.
-
+    method : str, optional
+        The method to use for balancing the data. Options are:
+        - "oversampling": Use RandomOverSampler.
+        - "undersampling": Use RandomUnderSampler.
+        - "smote": Use SMOTE for synthetic oversampling.
+        - "class_weight": Assign class weights based on class frequency (default: "oversampling").
+        
     Returns
     -------
     DataFrame
         The balanced DataFrame.
     """
     from pandas import concat, Series
-    from imblearn.over_sampling import RandomOverSampler
+    from imblearn.over_sampling import RandomOverSampler, SMOTE
+    from imblearn.under_sampling import RandomUnderSampler
+    from sklearn.utils.class_weight import compute_class_weight
     
     X: DataFrame = df.drop("Label", axis=1)
     y: Series = df["Label"].copy()
-    ros = RandomOverSampler(sampling_strategy="all", random_state=42)
-    X_ros, y_ros = ros.fit_resample(X, y)
-    trainingData: DataFrame = concat(objs=[X_ros, y_ros], axis=1)
-
+    
+    if method == "oversampling":
+        ros = RandomOverSampler(sampling_strategy="all", random_state=42)
+        X_balanced, y_balanced = ros.fit_resample(X, y)
+    
+    elif method == "undersampling":
+        rus = RandomUnderSampler(sampling_strategy="majority", random_state=42)
+        X_balanced, y_balanced = rus.fit_resample(X, y)
+    
+    elif method == "smote":
+        smote = SMOTE(sampling_strategy="auto", random_state=42)
+        X_balanced, y_balanced = smote.fit_resample(X, y)
+    
+    elif method == "class_weight":
+        # No actual resampling, just computing class weights
+        class_weights = compute_class_weight('balanced', classes=y.unique(), y=y)
+        class_weights_dict = {cls: weight for cls, weight in zip(y.unique(), class_weights)}
+        # Assuming you will use these class weights in your model's training process
+        return class_weights_dict
+    
+    else:
+        raise ValueError("Invalid method. Choose from 'oversampling', 'undersampling', 'smote', or 'class_weight'.")
+    
+    trainingData: DataFrame = concat(objs=[X_balanced, y_balanced], axis=1)
+    
     return trainingData
 
 def split_train_test_data(df:DataFrame, random_state:int=7, shuffle:bool=True, stratify:str=None, with_validation:bool=False) -> tuple:
