@@ -233,7 +233,7 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
     y: Series = df["Label"].copy()
     
     if method == "oversampling":
-        ros = RandomOverSampler(sampling_strategy="all", random_state=42)
+        ros = RandomOverSampler(sampling_strategy="minority", random_state=42)
         X_balanced, y_balanced = ros.fit_resample(X, y)
     
     elif method == "undersampling":
@@ -338,7 +338,15 @@ def format_fasttext(df:DataFrame, feature_name:str="Features", label_name:str="L
 
     return df
 
-def prepare_corpus_dataframe(df:DataFrame, fields_to_clean:list, label_code:str, label_name:str, features_fields:list, corpus_ft_path:str, validation_corpus_ft_path:str, balance_method:str="oversampling", dimensions:int=300):
+def prepare_corpus_dataframe(
+        df:DataFrame, fields_to_clean:list, 
+        label_code:str, label_name:str, 
+        features_fields:list, 
+        corpus_ft_path:str, 
+        validation_corpus_ft_path:str, 
+        balance_method:str="oversampling", 
+        dimensions:int=300
+    ):
     """
     Prepare a DataFrame to be used as input to a FastText supervised model.
 
