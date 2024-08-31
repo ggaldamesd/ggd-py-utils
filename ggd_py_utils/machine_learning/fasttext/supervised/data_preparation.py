@@ -100,7 +100,7 @@ def clean_features(df:DataFrame) -> DataFrame:
     DataFrame
         The modified DataFrame.
     """
-    from ggd_py_utils.machine_learning.fasttext.supervised.data_preparation import clean_text
+    from ggd_py_utils.machine_learning.data.cleaning import clean_text
     
     df["Features"] = df["Features"].progress_apply(func=lambda x: clean_text(text=x))
     
