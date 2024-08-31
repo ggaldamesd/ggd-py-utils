@@ -248,10 +248,11 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         X_balanced, y_balanced = smote.fit_resample(X, y)
     
     elif method == "smotec":
-        X_dummies: DataFrame = get_dummies(X, columns=["Label"], drop_first=True)
-        smotec = SMOTENC(categorical_features=[X_dummies.columns.get_loc(col) for col in X_dummies.columns if any(c in col for c in categorical_columns)],
+        categorical_columns: list[str] = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    
+        smotec = SMOTENC(categorical_features=[X.columns.get_loc(col) for col in categorical_columns],
                          sampling_strategy="auto", random_state=42)
-        X_balanced, y_balanced = smotec.fit_resample(X_dummies, y)
+        X_balanced, y_balanced = smotec.fit_resample(X, y)
 
     elif method == "class_weight":
         # No actual resampling, just computing class weights
