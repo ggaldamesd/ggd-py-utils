@@ -102,7 +102,7 @@ def clean_features(df:DataFrame) -> DataFrame:
     """
     from ggd_py_utils.machine_learning.data.cleaning import clean_text
     
-    df["Features"] = df["Features"].progress_apply(func=lambda x: clean_text(text=x))
+    df["Features"] = df["Features"].apply(func=lambda x: clean_text(text=x))
     
     return df
     
@@ -206,7 +206,7 @@ def get_minimal_corpus_dataframe(df:DataFrame):
     
     return df
 
-def balance_training_data(df: DataFrame, method: str = "oversampling") -> DataFrame:
+def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
     """
     Balance the training data using different techniques based on the specified method.
     
@@ -351,7 +351,7 @@ def format_fasttext(df:DataFrame, feature_name:str="Features", label_name:str="L
 
     return df
 
-def prepare_corpus_dataframe(df:DataFrame, fields_to_clean:list, label_code:str, label_name:str, features_fields:list, corpus_ft_path:str, validation_corpus_ft_path:str, dimensions:int=300):
+def prepare_corpus_dataframe(df:DataFrame, fields_to_clean:list, label_code:str, label_name:str, features_fields:list, corpus_ft_path:str, validation_corpus_ft_path:str, balance_method:str="oversampling", dimensions:int=300):
     """
     Prepare a DataFrame to be used as input to a FastText supervised model.
 
@@ -374,6 +374,12 @@ def prepare_corpus_dataframe(df:DataFrame, fields_to_clean:list, label_code:str,
         The path to save the formatted training data.
     validation_corpus_ft_path : str
         The path to save the formatted test data.
+    balance_method : str, optional
+        The method to use for balancing the data. Options are:
+        - "oversampling": Use RandomOverSampler.
+        - "undersampling": Use RandomUnderSampler.
+        - "smote": Use SMOTE for synthetic oversampling.
+        - "class_weight": Assign class weights based on class frequency (default: "oversampling").
     dimensions : int, optional
         The number of dimensions to use in the model, by default 300.
 
@@ -421,7 +427,7 @@ def prepare_corpus_dataframe(df:DataFrame, fields_to_clean:list, label_code:str,
         df:DataFrame = get_minimal_corpus_dataframe(df=df)
 
     with time_block(block_name="balance_training_data"):
-        df:DataFrame = balance_training_data(df=df)
+        df:DataFrame = balance_training_data(df=df, method=balance_method)
         print(f"Dataframe shape after balance_training_data: {df.shape}")
 
     with time_block(block_name="split_train_test_data"):
