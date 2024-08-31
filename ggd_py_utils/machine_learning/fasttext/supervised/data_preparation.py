@@ -248,7 +248,10 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         X_balanced, y_balanced = smote.fit_resample(X, y)
     
     elif method == "smoten":
-        smotec = SMOTEN(sampling_strategy="auto", random_state=42, k_neighbors=min(5, X[y == y.min()].shape[0] - 1))
+        n_samples_min_class = X[y == y.min()].shape[0]
+        k_neighbors: int = min(5, n_samples_min_class - 1)
+
+        smotec = SMOTEN(sampling_strategy="auto", random_state=42, k_neighbors=k_neighbors)
         X_balanced, y_balanced = smotec.fit_resample(X, y)
 
     elif method == "class_weight":
