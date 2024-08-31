@@ -1,9 +1,5 @@
-from fasttext.FastText import _FastText
-from fasttext import train_supervised
 from multiprocessing import cpu_count
-
-from ggd_py_utils.tracing.file import get_file_size
-from ggd_py_utils.tracing.metrics import time_block
+from fasttext.FastText import _FastText
 
 def merge_hyperparameters(defaults:dict, overrides:dict={}) -> dict:
     """
@@ -70,6 +66,10 @@ def train_fasttext_model_with_autotune(
     - `autotuneDuration`: The duration given in seconds
     - `autotuneModelSize`: The size given in bytes
     """
+    from fasttext.FastText import train_supervised
+    from ggd_py_utils.tracing.metrics import time_block
+    from ggd_py_utils.tracing.file import get_file_size
+    
     model:_FastText
     
     autotune_duration:int = 60 * autotune_duration_in_minutes
@@ -171,6 +171,10 @@ def train_fasttext_model_with_hyperparameter(
     }
 
     final_hyperparameters:dict = merge_hyperparameters(supervised_default, hyperparameters)
+
+    from fasttext.FastText import train_supervised
+    from ggd_py_utils.tracing.metrics import time_block
+    from ggd_py_utils.tracing.file import get_file_size
 
     with time_block(block_name="Training without autotune"):
         model:_FastText = train_supervised(

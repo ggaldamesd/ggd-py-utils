@@ -1,9 +1,4 @@
 from contextlib import contextmanager
-from time import time
-from colorama import Fore, Style
-from chime import success, theme
-
-theme(name="mario")
 
 @contextmanager
 def time_block(block_name:str=""):
@@ -19,6 +14,11 @@ def time_block(block_name:str=""):
         The name of the block to be printed before the execution time.
 
     """
+    from time import time
+    from colorama import Fore, Style
+    from chime import success, theme
+
+    theme(name="mario")
     
     start_time: float = time()
     yield

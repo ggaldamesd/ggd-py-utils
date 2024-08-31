@@ -1,13 +1,4 @@
-from pandas import DataFrame, Series, to_numeric, concat
-from tqdm.notebook import tqdm
-from imblearn.over_sampling import RandomOverSampler
-from sklearn.model_selection import train_test_split
-from ggd_py_utils.formating.numeric import abbreviate_large_number
-from ggd_py_utils.machine_learning.data.cleaning import clean_text
-from ggd_py_utils.machine_learning.data.corpus_metrics import get_words_and_subwords_counts
-from ggd_py_utils.tracing.metrics import time_block
-
-tqdm.pandas()
+from pandas import DataFrame
 
 def clean_dataframe(df:DataFrame, fields:list, inplace:bool=True) -> DataFrame:
     """
@@ -49,6 +40,7 @@ def text_label_to_numeric(df:DataFrame, label_code_name:str) -> DataFrame:
     DataFrame
         The modified DataFrame.
     """
+    from pandas import to_numeric
 
     df[label_code_name] = to_numeric(df[label_code_name], errors='coerce').astype('Int64')
     
@@ -108,6 +100,7 @@ def clean_features(df:DataFrame) -> DataFrame:
     DataFrame
         The modified DataFrame.
     """
+    from ggd_py_utils.machine_learning.fasttext.supervised.data_preparation import clean_text
     
     df["Features"] = df["Features"].progress_apply(func=lambda x: clean_text(text=x))
     
@@ -227,6 +220,9 @@ def balance_training_data(df:DataFrame) -> DataFrame:
     DataFrame
         The balanced DataFrame.
     """
+    from pandas import concat, Series
+    from imblearn.over_sampling import RandomOverSampler
+    
     X: DataFrame = df.drop("Label", axis=1)
     y: Series = df["Label"].copy()
     ros = RandomOverSampler(sampling_strategy="all", random_state=42)
@@ -257,6 +253,8 @@ def split_train_test_data(df:DataFrame, random_state:int=7, shuffle:bool=True, s
     tuple
         A tuple of (train_set, test_set) or (train_set, val_set, test_set) depending on the value of with_validation.
     """
+    from sklearn.model_selection import train_test_split
+    
     strat = df[stratify] if stratify else None
     train_set, test_set = train_test_split(
         df, test_size=0.2, random_state=random_state, shuffle=shuffle, stratify=strat)
@@ -354,6 +352,8 @@ def prepare_corpus_dataframe(df:DataFrame, fields_to_clean:list, label_code:str,
     -------
     None
     """
+    from ggd_py_utils.tracing.metrics import time_block
+    
     print(f"Initial Dataframe shape: {df.shape}")
     
     with time_block(block_name="clean_dataframe"):
@@ -406,6 +406,9 @@ def prepare_corpus_dataframe(df:DataFrame, fields_to_clean:list, label_code:str,
         
     with time_block(block_name="format_fasttext_validation_data"):
         format_fasttext(df=test, path=validation_corpus_ft_path)
+
+    from ggd_py_utils.machine_learning.fasttext.supervised.data_preparation import get_words_and_subwords_counts
+    from ggd_py_utils.tracing.metrics import abbreviate_large_number
 
     words_and_subwords_counts:dict = get_words_and_subwords_counts(filename=corpus_ft_path)
 
