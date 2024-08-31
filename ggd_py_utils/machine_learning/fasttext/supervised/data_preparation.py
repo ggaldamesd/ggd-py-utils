@@ -219,6 +219,7 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         - "oversampling": Use RandomOverSampler.
         - "undersampling": Use RandomUnderSampler.
         - "smote": Use SMOTE for synthetic oversampling.
+        - "smotec": Use SMOTENC for categorical features.
         - "class_weight": Assign class weights based on class frequency (default: "oversampling").
         
     Returns
@@ -226,8 +227,8 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
     DataFrame
         The balanced DataFrame.
     """
-    from pandas import concat, Series
-    from imblearn.over_sampling import RandomOverSampler, SMOTE
+    from pandas import concat, Series, get_dummies
+    from imblearn.over_sampling import RandomOverSampler, SMOTE, SMOTENC
     from imblearn.under_sampling import RandomUnderSampler
     from sklearn.utils.class_weight import compute_class_weight
     
@@ -246,6 +247,12 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         smote = SMOTE(sampling_strategy="auto", random_state=42)
         X_balanced, y_balanced = smote.fit_resample(X, y)
     
+    elif method == "smotec":
+        X_dummies: DataFrame = get_dummies(X, columns=["Label"], drop_first=True)
+        smotec = SMOTENC(categorical_features=[X_dummies.columns.get_loc(col) for col in X_dummies.columns if any(c in col for c in categorical_columns)],
+                         sampling_strategy="auto", random_state=42)
+        X_balanced, y_balanced = smotec.fit_resample(X_dummies, y)
+
     elif method == "class_weight":
         # No actual resampling, just computing class weights
         class_weights = compute_class_weight('balanced', classes=y.unique(), y=y)
