@@ -442,8 +442,8 @@ def prepare_corpus_dataframe(df:DataFrame, fields_to_clean:list, label_code:str,
     with time_block(block_name="format_fasttext_validation_data"):
         format_fasttext(df=test, path=validation_corpus_ft_path)
 
-    from ggd_py_utils.machine_learning.fasttext.supervised.data_preparation import get_words_and_subwords_counts
-    from ggd_py_utils.tracing.metrics import abbreviate_large_number
+    from ggd_py_utils.machine_learning.data.corpus_metrics import get_words_and_subwords_counts
+    from ggd_py_utils.formating.numeric import abbreviate_large_number
 
     words_and_subwords_counts:dict = get_words_and_subwords_counts(filename=corpus_ft_path)
 
