@@ -248,7 +248,7 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         X_balanced, y_balanced = smote.fit_resample(X, y)
     
     elif method == "smoten":
-        smotec = SMOTEN(sampling_strategy="auto", random_state=42)
+        smotec = SMOTEN(sampling_strategy="auto", random_state=42, k_neighbors=min(5, X[y == y.min()].shape[0] - 1))
         X_balanced, y_balanced = smotec.fit_resample(X, y)
 
     elif method == "class_weight":
@@ -259,7 +259,7 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         return class_weights_dict
     
     else:
-        raise ValueError("Invalid method. Choose from 'oversampling', 'undersampling', 'smote', or 'class_weight'.")
+        raise ValueError("Invalid method. Choose from 'oversampling', 'undersampling', 'smote', 'smoten', or 'class_weight'.")
     
     trainingData: DataFrame = concat(objs=[X_balanced, y_balanced], axis=1)
     
