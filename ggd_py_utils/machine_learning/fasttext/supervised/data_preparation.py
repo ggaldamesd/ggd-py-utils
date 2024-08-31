@@ -219,7 +219,7 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         - "oversampling": Use RandomOverSampler.
         - "undersampling": Use RandomUnderSampler.
         - "smote": Use SMOTE for synthetic oversampling.
-        - "smotec": Use SMOTENC for categorical features.
+        - "smoten": Use SMOTEN for categorical features.
         - "class_weight": Assign class weights based on class frequency (default: "oversampling").
         
     Returns
@@ -247,11 +247,8 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         smote = SMOTE(sampling_strategy="auto", random_state=42)
         X_balanced, y_balanced = smote.fit_resample(X, y)
     
-    elif method == "smotec":
-        categorical_columns: list[str] = X.select_dtypes(include=["object", "category"]).columns.tolist()
-    
-        smotec = SMOTEN(categorical_features=[X.columns.get_loc(col) for col in categorical_columns],
-                         sampling_strategy="auto", random_state=42)
+    elif method == "smoten":
+        smotec = SMOTEN(sampling_strategy="auto", random_state=42)
         X_balanced, y_balanced = smotec.fit_resample(X, y)
 
     elif method == "class_weight":
