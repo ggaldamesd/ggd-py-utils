@@ -218,9 +218,6 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         The method to use for balancing the data. Options are:
         - "oversampling": Use RandomOverSampler.
         - "undersampling": Use RandomUnderSampler.
-        - "smote": Use SMOTE for synthetic oversampling.
-        - "smoten": Use SMOTEN for categorical features.
-        - "class_weight": Assign class weights based on class frequency (default: "oversampling").
         
     Returns
     -------
@@ -243,26 +240,8 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         rus = RandomUnderSampler(sampling_strategy="majority", random_state=42)
         X_balanced, y_balanced = rus.fit_resample(X, y)
     
-    elif method == "smote":
-        smote = SMOTE(sampling_strategy="auto", random_state=42)
-        X_balanced, y_balanced = smote.fit_resample(X, y)
-    
-    elif method == "smoten":
-        n_samples_min_class = X[y == y.min()].shape[0]
-        k_neighbors: int = min(5, n_samples_min_class - 1)
-
-        smotec = SMOTEN(sampling_strategy="auto", random_state=42, k_neighbors=k_neighbors)
-        X_balanced, y_balanced = smotec.fit_resample(X, y)
-
-    elif method == "class_weight":
-        # No actual resampling, just computing class weights
-        class_weights = compute_class_weight('balanced', classes=y.unique(), y=y)
-        class_weights_dict = {cls: weight for cls, weight in zip(y.unique(), class_weights)}
-        # Assuming you will use these class weights in your model's training process
-        return class_weights_dict
-    
     else:
-        raise ValueError("Invalid method. Choose from 'oversampling', 'undersampling', 'smote', 'smoten', or 'class_weight'.")
+        raise ValueError("Invalid method. Choose from 'oversampling' or 'undersampling'.")
     
     trainingData: DataFrame = concat(objs=[X_balanced, y_balanced], axis=1)
     
