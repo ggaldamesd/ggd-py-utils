@@ -179,11 +179,9 @@ def format_fasttext(df:DataFrame, feature_name:str="Features", path:str="") -> D
 
 def prepare_corpus_dataframe(
         df:DataFrame, fields_to_clean:list, 
-        label_code:str, label_name:str, 
+        label_code:str, 
         corpus_ft_path:str, 
-        validation_corpus_ft_path:str, 
         features_field_name:str="Features", 
-        balance_method:str="oversampling", 
         dimensions:int=300
     ):
     """

@@ -101,7 +101,7 @@ def train_fasttext_model_with_hyperparameter(
     with time_block(block_name="Getting model metrics"):
         analogies = model.get_analogies(wordA="clavo", wordB="martillo", wordC="lechuga", k=3)
 
-        print(f"Model metrics (analogies => clavo, martillo, lechuga): {vars(analogies)}")
+        print(f"Model metrics (analogies => clavo, martillo, lechuga): {analogies}")
         
         word_a_vector = model.get_word_vector(word="clavo")
         word_b_vector = model.get_word_vector(word="martillo")
