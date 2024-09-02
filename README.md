@@ -12,6 +12,10 @@ The package requires the following dependencies:
 * `tqdm==4.66.2`
 * `imbalanced-learn==0.12.3`
 * `scikit-learn==1.5.0`
+* `colorama==0.4.6`
+* `chime==0.7.0`
+* `numpy==1.26.4`
+* `fasttext-wheel==0.9.2`
 
 **Installation**
 
