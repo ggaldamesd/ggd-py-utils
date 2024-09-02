@@ -17,13 +17,17 @@ def human_friendly_time(elapsed_time:float) -> str:
 
     """
     hours, rem = divmod(elapsed_time, 3600)
+    hours_int:int = int(hours)
+    
     minutes, seconds = divmod(rem, 60)
+    minutes_int:int = int(minutes)
+    
     output: str = None
 
     if hours > 0:
-        output = f"{int(hours)}h {int(minutes)}m {seconds:.2f}s"
+        output = f"{hours_int}h {minutes_int}m {seconds:.2f}s"
     elif minutes > 0:
-        output = f"{int(minutes)}m {seconds:.2f}s"
+        output = f"{minutes_int}m {seconds:.2f}s"
     else:
         output =f"{seconds:.2f}s"
 
