@@ -128,29 +128,33 @@ def train_fasttext_model_with_hyperparameter(
     
     return model
 
-def reduce_fasttext_model(model:_FastText, target_dim:int, reduced_model_file:str) -> _FastText:
+def reduce_fasttext_model(model:_FastText, target_dimension_percentage:float, reduced_model_file:str) -> _FastText:
     """
-    Reduce a FastText model to a lower dimension.
+    Reduce the dimension of a FastText model.
 
     Parameters
     ----------
     model : _FastText
-        The model to reduce.
-    target_dim : int
-        The target dimension to reduce to.
+        The FastText model to reduce.
+    target_dimension_percentage : float
+        The target dimension as a percentage of the current dimension.
     reduced_model_file : str
-        The path to save the reduced model to.
+        The path to save the reduced model.
 
     Returns
     -------
     _FastText
-        The reduced model.
+        The reduced FastText model.
     """
-    print(f"Target dimension: {target_dim}")
-
     from fasttext.util import reduce_model
+
+    current_dimension = model.get_dimension()
+    print(f"Current dimension: {current_dimension}")    
     
-    reduced_model: _FastText = reduce_model(ft_model=model, target_dim=target_dim)
+    target_dimension = int(current_dimension * target_dimension_percentage)
+    print(f"Target dimension: {target_dimension}")
+
+    reduced_model: _FastText = reduce_model(ft_model=model, target_dim=target_dimension)
     model.save_model(path=reduced_model_file)
     
     return reduced_model
