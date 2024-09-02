@@ -59,10 +59,10 @@ def time_block(block_name:str=None):
     from colorama import Fore, Style
 
     if block_name:
-        elapsed_time_output:str = f"{Fore.CYAN}Trace: {block_name} -> {Fore.YELLOW}Took: {Fore.GREEN}{elapsed_time_str}{Style.RESET_ALL}"
+        elapsed_time_output:str = "{}Trace: {} -> {}Took: {}{}{}".format(Fore.CYAN, block_name, Fore.YELLOW, Fore.GREEN, elapsed_time_str, Style.RESET_ALL)
         print(elapsed_time_output)
     else:
-        elapsed_time_output:str = f"{Fore.YELLOW}Took: {Fore.GREEN}{elapsed_time_str}{Style.RESET_ALL}"
+        elapsed_time_output:str = "{}Took: {}{}{}".format(Fore.YELLOW, Fore.GREEN, elapsed_time_str, Style.RESET_ALL)
         print(elapsed_time_output)
 
     from chime import success, theme
