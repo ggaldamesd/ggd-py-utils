@@ -27,6 +27,6 @@ setup(
         # "colorama==0.4.6",
         # "chime==0.7.0",
         # "numpy==1.26.4",
-        # "fasttext-wheel==0.9.2",
+        "fasttext-wheel==0.9.2",
     ],
 )
