@@ -99,10 +99,18 @@ def train_fasttext_model_with_hyperparameter(
         )
     
     with time_block(block_name="Getting model metrics"):
-        analogies = model.get_analogies(wordA="clavo", wordA="martillo", wordA="lechuga", k=3)
+        analogies = model.get_analogies(wordA="clavo", wordB="martillo", wordC="lechuga", k=3)
 
         print(f"Model metrics (analogies => clavo, martillo, lechuga): {vars(analogies)}")
         
+        word_a_vector = model.get_word_vector(word="clavo")
+        word_b_vector = model.get_word_vector(word="martillo")
+
+        from numpy.linalg import norm
+        
+        similarity = word_a_vector.dot(word_b_vector) / (norm(word_a_vector) * norm(word_b_vector))
+        print(f"Similarity between 'clavo' and 'martillo': {similarity}")
+
         from ggd_py_utils.machine_learning.fasttext.unsupervised.predictions import print_nearest_neighbors
         
         print_nearest_neighbors(products=["clavo", "martillo", "lechuga"], model=model)
@@ -143,6 +151,6 @@ def reduce_fasttext_model(model:_FastText, target_dim:int, reduced_model_file:st
     from fasttext.util import reduce_model
     
     reduced_model: _FastText = reduce_model(ft_model=model, target_dim=target_dim)
-    model.save_model(reduced_model)
+    model.save_model(path=reduced_model_file)
     
     return reduced_model
