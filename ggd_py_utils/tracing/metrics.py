@@ -55,15 +55,18 @@ def time_block(block_name:str=None):
     elapsed_time: float = time() - start_time
     
     elapsed_time_str:str = human_friendly_time(elapsed_time=elapsed_time)
+    print(f"Elapsed time: {elapsed_time_str}")
     
     # from colorama import Fore, Style
 
     if block_name:
+        elapsed_time_output:str = f"Trace: {block_name} -> Took: {elapsed_time_str}"
         # print(f"{Fore.CYAN}Trace: {block_name} -> {Fore.YELLOW}Took: {Fore.GREEN}{elapsed_time_str}{Style.RESET_ALL}")
-        print(f"Trace: {block_name} -> Took: {elapsed_time_str}")
+        print(elapsed_time_output)
     else:
+        elapsed_time_output:str = f"Took: {elapsed_time_str}"
         # print(f"{Fore.YELLOW}Took: {Fore.GREEN}{elapsed_time_str}{Style.RESET_ALL}")
-        print(f"Took: {elapsed_time_str}")
+        print(elapsed_time_output)
 
     from chime import success, theme
     
