@@ -55,7 +55,7 @@ def time_block(block_name:str=""):
     from colorama import Fore, Style
 
     if block_name:
-        print(f"{Fore.CYAN}Trace: {block_name} -> {Fore.YELLOW}Time: {Fore.GREEN}{elapsed_time:.4f} seconds{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}Trace: {block_name} -> {Fore.YELLOW}Time: {Fore.GREEN}{elapsed_time} seconds{Style.RESET_ALL}")
     else:
         print(f"{Fore.YELLOW}Took: {Fore.GREEN}{elapsed_time}{Style.RESET_ALL}")
 
