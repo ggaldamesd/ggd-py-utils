@@ -52,12 +52,14 @@ def time_block(block_name:str=""):
     
     elapsed_time_str:str = human_friendly_time(elapsed_time=elapsed_time)
     
-    from colorama import Fore, Style
+    # from colorama import Fore, Style
 
     if block_name:
-        print(f"{Fore.CYAN}Trace: {block_name} -> {Fore.YELLOW}Took: {Fore.GREEN}{elapsed_time_str}{Style.RESET_ALL}")
+        # print(f"{Fore.CYAN}Trace: {block_name} -> {Fore.YELLOW}Took: {Fore.GREEN}{elapsed_time_str}{Style.RESET_ALL}")
+        print(f"Trace: {block_name} -> Took: {elapsed_time_str}")
     else:
-        print(f"{Fore.YELLOW}Took: {Fore.GREEN}{elapsed_time_str}{Style.RESET_ALL}")
+        # print(f"{Fore.YELLOW}Took: {Fore.GREEN}{elapsed_time_str}{Style.RESET_ALL}")
+        print(f"Took: {elapsed_time_str}")
 
     from chime import success, theme
     
