@@ -24,7 +24,7 @@ def clean_dataframe(df:DataFrame, fields:list, inplace:bool=True) -> DataFrame:
     
     return df
 
-def define_features(df:DataFrame, features_field_name:str="Features") -> DataFrame:
+def define_features(df:DataFrame, features_field_name:str="Features", ignore:list=[]) -> DataFrame:
     """
     Define a new column in the DataFrame with the given name containing the
     concatenation of all string columns in the DataFrame, separated by a space.
@@ -35,13 +35,15 @@ def define_features(df:DataFrame, features_field_name:str="Features") -> DataFra
         The DataFrame to modify.
     features_field_name : str, optional
         The name of the new column, by default "Features".
+    ignore : list, optional
+        A list of column names to ignore, by default [].
 
     Returns
     -------
     DataFrame
         The modified DataFrame.
     """
-    df[features_field_name] = df.apply(lambda x: " ".join([str(i) for i in x if isinstance(i, str)]), axis=1)
+    df[features_field_name] = df.apply(lambda x: " ".join([str(i) for i in x if isinstance(i, str) and i not in ignore]), axis=1)
     
     return df
 
