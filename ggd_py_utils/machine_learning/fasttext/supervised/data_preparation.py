@@ -1,4 +1,10 @@
+from typing import Any
+from numpy import dtype
+from numpy._typing._array_like import _SupportsArray
+from numpy._typing._nested_sequence import _NestedSequence
 from pandas import DataFrame
+from pandas.core.series import Series
+from scipy.sparse._matrix import spmatrix
 
 def clean_dataframe(df:DataFrame, fields:list, inplace:bool=True) -> DataFrame:
     """
@@ -206,7 +212,7 @@ def get_minimal_corpus_dataframe(df:DataFrame):
     
     return df
 
-def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
+def balance_training_data(df:DataFrame, method:str="oversampling", min_samples:int=10) -> DataFrame:
     """
     Balance the training data using different techniques based on the specified method.
     
@@ -216,21 +222,30 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         The DataFrame to balance.
     method : str, optional
         The method to use for balancing the data. Options are:
-        - "oversampling": Use RandomOverSampler.
+        - "smote": Use SMOTE.
         - "undersampling": Use RandomUnderSampler.
+        - "smoteenn": Use SMOTEENN (SMOTE + Edited Nearest Neighbors).
+    min_samples : int, optional
+        The minimum number of samples required for each class. Defaults to 10.
         
     Returns
     -------
     DataFrame
         The balanced DataFrame.
     """
-    from pandas import concat, Series, get_dummies
-    from imblearn.over_sampling import RandomOverSampler, SMOTE, SMOTEN
+    from pandas import concat, Series
+    from imblearn.over_sampling import RandomOverSampler, SMOTE
     from imblearn.under_sampling import RandomUnderSampler
-    from sklearn.utils.class_weight import compute_class_weight
+    from sklearn.preprocessing import LabelEncoder
+    from sklearn.model_selection import train_test_split
+    from sklearn.feature_extraction.text import TfidfVectorizer
     
-    X: DataFrame = df.drop("Label", axis=1)
-    y: Series = df["Label"].copy()
+    class_counts: Series[int] = df['Label'].value_counts()
+    valid_classes = class_counts[class_counts >= min_samples].index
+    df_filtered: DataFrame = df[df['Label'].isin(valid_classes)]
+
+    X: DataFrame = df_filtered.drop("Label", axis=1)
+    y: Series = df_filtered["Label"].copy()
     
     if method == "oversampling":
         ros = RandomOverSampler(sampling_strategy="minority", random_state=42)
@@ -240,8 +255,23 @@ def balance_training_data(df:DataFrame, method:str="oversampling") -> DataFrame:
         rus = RandomUnderSampler(sampling_strategy="majority", random_state=42)
         X_balanced, y_balanced = rus.fit_resample(X, y)
     
+    elif method == "smote":
+        le = LabelEncoder()
+        y_encoded: _SupportsArray[dtype[Any]] | _NestedSequence[_SupportsArray[dtype[Any]]] | bool | int | float | complex | str | bytes | _NestedSequence[bool | int | float | complex | str | bytes] = le.fit_transform(y)
+        X_train, X_test, y_train, _ = train_test_split(X, y_encoded, test_size=0.2, stratify=y_encoded, random_state=42)
+        
+        vectorizer = TfidfVectorizer()
+        X_train: spmatrix = vectorizer.fit_transform(X_train)
+        X_test: spmatrix = vectorizer.transform(X_test)
+
+        min_samples_in_class = min([y_train.tolist().count(label) for label in set(y_train)])
+        k_neighbors: int = min(5, min_samples_in_class - 1) if min_samples_in_class > 1 else 1
+        
+        smote = SMOTE(k_neighbors=k_neighbors, random_state=42)
+        X_balanced, y_balanced = smote.fit_resample(X, y)
+
     else:
-        raise ValueError("Invalid method. Choose from 'oversampling' or 'undersampling'.")
+        raise ValueError("Invalid method. Choose from 'oversampling', 'undersampling' or 'smote'.")
     
     trainingData: DataFrame = concat(objs=[X_balanced, y_balanced], axis=1)
     
