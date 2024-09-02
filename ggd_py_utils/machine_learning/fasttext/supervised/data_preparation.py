@@ -278,31 +278,36 @@ def balance_training_data(df:DataFrame, method:str="oversampling", min_samples:i
         from sklearn.feature_extraction.text import TfidfVectorizer
             
         vectorizer = TfidfVectorizer()
-        X_train = vectorizer.fit_transform(X_train)
-        X_test = vectorizer.transform(X_test)
-
+        X_train_vec = vectorizer.fit_transform(X_train)
+        
         min_samples_in_class = min([y_train.tolist().count(label) for label in set(y_train)])
 
-        k_neighbors = min(5, min_samples_in_class - 1) if min_samples_in_class > 1 else 1
+        k_neighbors:int = min(5, min_samples_in_class - 1) if min_samples_in_class > 1 else 1
         
         from imblearn.over_sampling import SMOTE
         
         smote = SMOTE(k_neighbors=k_neighbors, random_state=42)
 
-        X_train = X_train.toarray()
-        X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
+        X_train_vec_dense = X_train_vec.toarray()
+        X_resampled, y_resampled = smote.fit_resample(X_train_vec_dense, y_train)
         
         X_resampled_df = DataFrame(X_resampled, columns=vectorizer.get_feature_names_out())
-        X_resampled_df:DataFrame = X_resampled_df[['Label'] + [col for col in X_resampled_df.columns if col != 'Label']]
 
         y_balanced = le.inverse_transform(y_resampled)
+
+        X_resampled_df['Label'] = y_balanced
         
-        X_balanced['Label'] = y_balanced
-        trainingData = X_balanced[['Label'] + [col for col in X_balanced.columns if col != 'Label']]
+        X_resampled_df:DataFrame = X_resampled_df[['Label'] + [col for col in X_resampled_df.columns if col != 'Label']]
 
-        trainingData['Features'] = X_train.reset_index(drop=True)
+        X_train_df = DataFrame(X_train)
+        X_train_df['Label'] = y_train
 
-        return trainingData
+        training_data = X_resampled_df.reset_index(drop=True)
+        training_data['Features'] = X_train_df['Features'].reset_index(drop=True)
+        
+        training_data:DataFrame = training_data[["Label", "Features"]]
+
+        return training_data
         
     else:
         raise ValueError("Invalid method. Choose from 'oversampling', 'undersampling' or 'smote'.")
