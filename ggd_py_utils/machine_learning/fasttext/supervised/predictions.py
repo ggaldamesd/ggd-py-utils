@@ -1,5 +1,3 @@
-from fasttext.FastText import _FastText
-
 def parse_fasttext_label(label:str) -> tuple[str, str]:
     """
     Parse a FastText label into a code and description.
@@ -20,6 +18,8 @@ def parse_fasttext_label(label:str) -> tuple[str, str]:
     description:str = label.split('|')[1].replace('___', ' ')
 
     return code, description
+
+from fasttext.FastText import _FastText
 
 def print_predictions_for_products(products:list[str], model:_FastText, k:int=3, as_percentage:bool=True):
     """

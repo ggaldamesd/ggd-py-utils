@@ -14,19 +14,23 @@ def time_block(block_name:str=""):
         The name of the block to be printed before the execution time.
 
     """
-    from time import time
-    from colorama import Fore, Style
-    from chime import success, theme
+    from chime import theme
 
     theme(name="mario")
     
+    from time import time
+
     start_time: float = time()
     yield
     elapsed_time: float = time() - start_time
     
+    from colorama import Fore, Style
+
     if block_name:
         print(f"{Fore.CYAN}Trace: {block_name} -> {Fore.YELLOW}Time: {Fore.GREEN}{elapsed_time:.4f} seconds{Style.RESET_ALL}")
     else:
         print(f"{Fore.YELLOW}Time: {Fore.GREEN}{elapsed_time:.4f} seconds{Style.RESET_ALL}")
 
+    from chime import success, theme
+    
     success()

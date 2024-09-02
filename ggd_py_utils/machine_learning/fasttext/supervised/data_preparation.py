@@ -1,10 +1,4 @@
-from typing import Any
-from numpy import dtype
-from numpy._typing._array_like import _SupportsArray
-from numpy._typing._nested_sequence import _NestedSequence
 from pandas import DataFrame
-from pandas.core.series import Series
-from scipy.sparse._matrix import spmatrix
 
 def clean_dataframe(df:DataFrame, fields:list, inplace:bool=True) -> DataFrame:
     """
@@ -222,9 +216,9 @@ def balance_training_data(df:DataFrame, method:str="oversampling", min_samples:i
         The DataFrame to balance.
     method : str, optional
         The method to use for balancing the data. Options are:
-        - "smote": Use SMOTE.
+        - "oversampling": Use RandomOverSampler.
         - "undersampling": Use RandomUnderSampler.
-        - "smoteenn": Use SMOTEENN (SMOTE + Edited Nearest Neighbors).
+        - "smote": Use SMOTE.
     min_samples : int, optional
         The minimum number of samples required for each class. Defaults to 10.
         
@@ -233,49 +227,82 @@ def balance_training_data(df:DataFrame, method:str="oversampling", min_samples:i
     DataFrame
         The balanced DataFrame.
     """
-    from pandas import concat, Series
-    from imblearn.over_sampling import RandomOverSampler, SMOTE
-    from imblearn.under_sampling import RandomUnderSampler
-    from sklearn.preprocessing import LabelEncoder
-    from sklearn.model_selection import train_test_split
-    from sklearn.feature_extraction.text import TfidfVectorizer
+    from pandas import Series
     
     class_counts: Series[int] = df['Label'].value_counts()
     valid_classes = class_counts[class_counts >= min_samples].index
     df_filtered: DataFrame = df[df['Label'].isin(valid_classes)]
 
-    X: DataFrame = df_filtered.drop("Label", axis=1)
-    y: Series = df_filtered["Label"].copy()
-    
     if method == "oversampling":
-        ros = RandomOverSampler(sampling_strategy="minority", random_state=42)
+        from imblearn.over_sampling import RandomOverSampler
+        
+        ros = RandomOverSampler(sampling_strategy="auto", random_state=42)
+
+        X: DataFrame = df_filtered.drop("Label", axis=1)
+        y: Series = df_filtered["Label"].copy()        
+
         X_balanced, y_balanced = ros.fit_resample(X, y)
+        
+        from pandas import concat
+        trainingData: DataFrame = concat(objs=[X_balanced, y_balanced], axis=1)
+        
+        return trainingData
     
     elif method == "undersampling":
-        rus = RandomUnderSampler(sampling_strategy="majority", random_state=42)
+        from imblearn.under_sampling import RandomUnderSampler
+        
+        rus = RandomUnderSampler(sampling_strategy="auto", random_state=42)
+        
+        X: DataFrame = df_filtered.drop("Label", axis=1)
+        y: Series = df_filtered["Label"].copy()
+
         X_balanced, y_balanced = rus.fit_resample(X, y)
     
-    elif method == "smote":
-        le = LabelEncoder()
-        y_encoded: _SupportsArray[dtype[Any]] | _NestedSequence[_SupportsArray[dtype[Any]]] | bool | int | float | complex | str | bytes | _NestedSequence[bool | int | float | complex | str | bytes] = le.fit_transform(y)
-        X_train, X_test, y_train, _ = train_test_split(X, y_encoded, test_size=0.2, stratify=y_encoded, random_state=42)
+        from pandas import concat
+        trainingData: DataFrame = concat(objs=[X_balanced, y_balanced], axis=1)
         
+        return trainingData
+    elif method == "smote":
+        from sklearn.preprocessing import LabelEncoder
+        
+        X = df_filtered['Features']
+        y = df_filtered['Label']
+        
+        le = LabelEncoder()
+        y_encoded = le.fit_transform(y)
+    
+        from sklearn.model_selection import train_test_split
+    
+        X_train, X_test, y_train, _ = train_test_split(X, y_encoded, test_size=0.3, stratify=y_encoded, random_state=42)
+
+        from sklearn.feature_extraction.text import TfidfVectorizer
+            
         vectorizer = TfidfVectorizer()
-        X_train: spmatrix = vectorizer.fit_transform(X_train)
-        X_test: spmatrix = vectorizer.transform(X_test)
+        X_train = vectorizer.fit_transform(X_train)
+        X_test = vectorizer.transform(X_test)
 
         min_samples_in_class = min([y_train.tolist().count(label) for label in set(y_train)])
-        k_neighbors: int = min(5, min_samples_in_class - 1) if min_samples_in_class > 1 else 1
+
+        k_neighbors = min(5, min_samples_in_class - 1) if min_samples_in_class > 1 else 1
+        
+        from imblearn.over_sampling import SMOTE
         
         smote = SMOTE(k_neighbors=k_neighbors, random_state=42)
-        X_balanced, y_balanced = smote.fit_resample(X, y)
 
+        X_train_dense = X_train.toarray()        
+        X_resampled, y_resampled = smote.fit_resample(X_train_dense, y_train)
+        
+        y_balanced = le.inverse_transform(y_resampled)
+        
+        X_balanced = DataFrame(X_resampled, columns=vectorizer.get_feature_names_out())
+        
+        trainingData = DataFrame(X_balanced)
+        trainingData['Label'] = y_balanced
+
+        return trainingData
+        
     else:
         raise ValueError("Invalid method. Choose from 'oversampling', 'undersampling' or 'smote'.")
-    
-    trainingData: DataFrame = concat(objs=[X_balanced, y_balanced], axis=1)
-    
-    return trainingData
 
 def split_train_test_data(df:DataFrame, random_state:int=7, shuffle:bool=True, stratify:str=None, with_validation:bool=False) -> tuple:
     """
@@ -299,9 +326,10 @@ def split_train_test_data(df:DataFrame, random_state:int=7, shuffle:bool=True, s
     tuple
         A tuple of (train_set, test_set) or (train_set, val_set, test_set) depending on the value of with_validation.
     """
-    from sklearn.model_selection import train_test_split
-    
     strat = df[stratify] if stratify else None
+    
+    from sklearn.model_selection import train_test_split
+
     train_set, test_set = train_test_split(
         df, test_size=0.2, random_state=random_state, shuffle=shuffle, stratify=strat)
 
@@ -412,9 +440,9 @@ def prepare_corpus_dataframe(
     -------
     None
     """
-    from ggd_py_utils.tracing.metrics import time_block
-    
     print(f"Initial Dataframe shape: {df.shape}")
+    
+    from ggd_py_utils.tracing.metrics import time_block
     
     with time_block(block_name="clean_dataframe"):
         df:DataFrame = clean_dataframe(df=df, fields=fields_to_clean, inplace=True)
@@ -468,15 +496,16 @@ def prepare_corpus_dataframe(
         format_fasttext(df=test, path=validation_corpus_ft_path)
 
     from ggd_py_utils.machine_learning.data.corpus_metrics import get_words_and_subwords_counts
-    from ggd_py_utils.formating.numeric import abbreviate_large_number
-
+    
     words_and_subwords_counts:dict = get_words_and_subwords_counts(filename=corpus_ft_path)
 
     words:int = words_and_subwords_counts["words"]
     subwords:int = words_and_subwords_counts["subwords"]
     tokens:int = words + subwords
-
+    
     estimated_params:int = dimensions * tokens
+    
+    from ggd_py_utils.formating.numeric import abbreviate_large_number
     estimated_params_formated:str = abbreviate_large_number(number=estimated_params)
 
     print(f"Estimated corpus parameters: {estimated_params} / {estimated_params_formated}")

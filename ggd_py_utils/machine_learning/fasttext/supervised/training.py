@@ -1,6 +1,3 @@
-from multiprocessing import cpu_count
-from fasttext.FastText import _FastText
-
 def merge_hyperparameters(defaults:dict, overrides:dict={}) -> dict:
     """
     Merge two dictionaries of hyperparameters. If a key is present in both dictionaries, the value from the overrides dictionary will be used.
@@ -20,6 +17,9 @@ def merge_hyperparameters(defaults:dict, overrides:dict={}) -> dict:
     hyperparameters:dict = {key: overrides.get(key, default) for key, default in defaults.items()}
     
     return hyperparameters
+
+from multiprocessing import cpu_count
+from fasttext.FastText import _FastText
 
 def train_fasttext_model_with_autotune(
         train_corpus_path:str, 
@@ -66,16 +66,15 @@ def train_fasttext_model_with_autotune(
     - `autotuneDuration`: The duration given in seconds
     - `autotuneModelSize`: The size given in bytes
     """
-    from fasttext.FastText import train_supervised
-    from ggd_py_utils.tracing.metrics import time_block
-    from ggd_py_utils.tracing.file import get_file_size
-    
     model:_FastText
     
     autotune_duration:int = 60 * autotune_duration_in_minutes
     autotune_model_size:int = 1024 * 1024 * autotune_model_size_in_mb
 
+    from ggd_py_utils.tracing.metrics import time_block
     with time_block(block_name="Training with autotune"):
+        from fasttext.FastText import train_supervised
+        
         model:_FastText = train_supervised(
             input=train_corpus_path,
             verbose=2,
@@ -99,6 +98,8 @@ def train_fasttext_model_with_autotune(
     
     model.save_model(model_file)
 
+    from ggd_py_utils.tracing.file import get_file_size
+    
     _, model_size = get_file_size(filename=model_file)
 
     print(f"Model size: {model_size}")
@@ -172,11 +173,11 @@ def train_fasttext_model_with_hyperparameter(
 
     final_hyperparameters:dict = merge_hyperparameters(supervised_default, hyperparameters)
 
-    from fasttext.FastText import train_supervised
     from ggd_py_utils.tracing.metrics import time_block
-    from ggd_py_utils.tracing.file import get_file_size
-
+    
     with time_block(block_name="Training without autotune"):
+        from fasttext.FastText import train_supervised
+        
         model:_FastText = train_supervised(
             input=train_corpus_path,
             thread=threads,
@@ -199,6 +200,8 @@ def train_fasttext_model_with_hyperparameter(
     
     model.save_model(model_file)
 
+    from ggd_py_utils.tracing.file import get_file_size
+    
     _, model_size = get_file_size(filename=model_file)
 
     print(f"Model size: {model_size}")
