@@ -289,15 +289,18 @@ def balance_training_data(df:DataFrame, method:str="oversampling", min_samples:i
         
         smote = SMOTE(k_neighbors=k_neighbors, random_state=42)
 
-        X_train_dense = X_train.toarray()        
-        X_resampled, y_resampled = smote.fit_resample(X_train_dense, y_train)
+        X_train = X_train.toarray()
+        X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
         
+        X_resampled_df = DataFrame(X_resampled, columns=vectorizer.get_feature_names_out())
+        X_resampled_df:DataFrame = X_resampled_df[['Label'] + [col for col in X_resampled_df.columns if col != 'Label']]
+
         y_balanced = le.inverse_transform(y_resampled)
         
-        X_balanced = DataFrame(X_resampled, columns=vectorizer.get_feature_names_out())
-        
-        trainingData = DataFrame(X_balanced)
-        trainingData['Label'] = y_balanced
+        X_balanced['Label'] = y_balanced
+        trainingData = X_balanced[['Label'] + [col for col in X_balanced.columns if col != 'Label']]
+
+        trainingData['Features'] = X_train.reset_index(drop=True)
 
         return trainingData
         
