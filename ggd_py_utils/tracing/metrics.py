@@ -21,15 +21,16 @@ def human_friendly_time(elapsed_time:float) -> str:
     
     minutes, seconds = divmod(rem, 60)
     minutes_int:int = int(minutes)
+    seconds_str:str = "{:.2f}".format(seconds)
     
     output: str = None
 
     if hours > 0:
-        output = "{}h {}m {:.2f}s".format(hours_int, minutes_int, seconds)
+        output = "{}h {}m {}s".format(hours_int, minutes_int, seconds_str)
     elif minutes > 0:
-        output = "{}m {:.2f}s".format(minutes_int, seconds)
+        output = "{}m {}s".format(minutes_int, seconds_str)
     else:
-        output ="{:.2f}s".format(seconds)
+        output ="{}s".format(seconds_str)
 
     return output
 
