@@ -45,7 +45,7 @@ def define_features(df:DataFrame, features_field_name:str="Features") -> DataFra
     
     return df
 
-def clean_features(df:DataFrame) -> DataFrame:
+def clean_features(df:DataFrame, features_field_name:str="Features") -> DataFrame:
     """
     Clean the features column by applying the clean_text function to each value.
     
@@ -61,33 +61,11 @@ def clean_features(df:DataFrame) -> DataFrame:
     """
     from ggd_py_utils.machine_learning.data.cleaning import clean_text
     
-    df["Features"] = df["Features"].apply(func=lambda x: clean_text(text=x))
+    df[features_field_name] = df[features_field_name].apply(func=lambda x: clean_text(text=x))
     
     return df
     
-def drop_invalid_data(df:DataFrame, label_code_name:str) -> DataFrame:
-    """
-    Drop all rows in the DataFrame where the value in the column named
-    label_code_name is 0.
-
-    Parameters
-    ----------
-    df : DataFrame
-        The DataFrame to modify.
-    label_code_name : str
-        The column name to query.
-
-    Returns
-    -------
-    DataFrame
-        The modified DataFrame.
-    """
-    
-    df:DataFrame = df.query(expr=f"{label_code_name} != 0")
-    
-    return df
-
-def drop_repeated_features(df:DataFrame, inplace:bool=True):
+def drop_repeated_features(df:DataFrame, features_field_name:str="Features", inplace:bool=True):
     """
     Drop all rows in the DataFrame where the value in the "Features" column
     already exists.
@@ -105,11 +83,11 @@ def drop_repeated_features(df:DataFrame, inplace:bool=True):
         The modified DataFrame.
     """
     
-    df.drop_duplicates(subset="Features", inplace=inplace)
+    df.drop_duplicates(subset=features_field_name, inplace=inplace)
     
     return df
 
-def drop_invalid_features_data(df:DataFrame) -> DataFrame:
+def drop_invalid_features_data(df:DataFrame, features_field_name:str="Features") -> DataFrame:
     """Drop all rows in the DataFrame where the value in the "Features" column
     contains the strings 'prueba' or 'LINEA INTEGRADA' (case insensitive).
 
@@ -124,12 +102,12 @@ def drop_invalid_features_data(df:DataFrame) -> DataFrame:
         The modified DataFrame.
     """
 
-    df:DataFrame = df[~df['Features'].str.contains(pat='prueba', case=False, na=False)]
-    df:DataFrame = df[~df['Features'].str.contains(pat='LINEA INTEGRADA', case=False, na=False)]
+    df:DataFrame = df[~df[features_field_name].str.contains(pat='prueba', case=False, na=False)]
+    df:DataFrame = df[~df[features_field_name].str.contains(pat='LINEA INTEGRADA', case=False, na=False)]
     
     return df
 
-def get_minimal_corpus_dataframe(df:DataFrame):
+def get_minimal_corpus_dataframe(df:DataFrame, features_field_name:str="Features") -> DataFrame:
     """
     Return a DataFrame with only the "Label" and "Features" columns.
     
@@ -143,11 +121,11 @@ def get_minimal_corpus_dataframe(df:DataFrame):
     DataFrame
         The modified DataFrame.
     """
-    df:DataFrame = df[["Features"]]
+    df:DataFrame = df[[features_field_name]]
     
     return df
 
-def format_fasttext(df:DataFrame, feature_name:str="Features", path:str="") -> DataFrame:
+def format_fasttext(df:DataFrame, features_field_name:str="Features", path:str="") -> DataFrame:
     """
     Format a DataFrame to be suitable as input to a FastText supervised model.
 
@@ -160,7 +138,7 @@ def format_fasttext(df:DataFrame, feature_name:str="Features", path:str="") -> D
     ----------
     df : DataFrame
         The DataFrame to format.
-    feature_name : str, optional
+    features_field_name : str, optional
         The name of the feature column, by default "Features".
     path : str, optional
         The path to save the formatted DataFrame to, by default "" (do not save).
@@ -170,7 +148,7 @@ def format_fasttext(df:DataFrame, feature_name:str="Features", path:str="") -> D
     DataFrame
         The formatted DataFrame.
     """
-    df = df.apply(func=lambda x: f"{x[feature_name]}", axis=1)
+    df = df.apply(func=lambda x: f"{x[features_field_name]}", axis=1)
 
     if len(path) != 0:
         df.to_csv(path_or_buf=path, index=False, header=False, sep="\t")
@@ -179,46 +157,10 @@ def format_fasttext(df:DataFrame, feature_name:str="Features", path:str="") -> D
 
 def prepare_corpus_dataframe(
         df:DataFrame, fields_to_clean:list, 
-        label_code:str, 
         corpus_ft_path:str, 
         features_field_name:str="Features", 
         dimensions:int=300
     ):
-    """
-    Prepare a DataFrame to be used as input to a FastText supervised model.
-
-    The function will clean the DataFrame by removing rows with NaN values in the specified columns and replacing NaN values with an empty string.
-    It will then convert the label column to a numeric column, concatenate the label and feature columns, clean the features column, drop repeated features, drop invalid features data, drop numeric encoded labels, balance the training data, split the data into a training set and a test set, format the data for FastText, and calculate the estimated number of parameters in the model.
-
-    Parameters
-    ----------
-    df : DataFrame
-        The DataFrame to prepare.
-    fields_to_clean : list
-        The columns names to clean.
-    label_code : str
-        The column name of the label code.
-    label_name : str
-        The column name of the label name.
-    features_fields : list
-        The column names of the features.
-    corpus_ft_path : str
-        The path to save the formatted training data.
-    validation_corpus_ft_path : str
-        The path to save the formatted test data.
-    balance_method : str, optional
-        The method to use for balancing the data. Options are:
-        - "oversampling": Use RandomOverSampler.
-        - "undersampling": Use RandomUnderSampler.
-        - "smote": Use SMOTE for synthetic oversampling.
-        - "class_weight": Assign class weights based on class frequency (default: "oversampling").
-    dimensions : int, optional
-        The number of dimensions to use in the model, by default 300.
-
-    Returns
-    -------
-    None
-    """
     print(f"Initial Dataframe shape: {df.shape}")
     
     from ggd_py_utils.tracing.metrics import time_block
@@ -231,25 +173,21 @@ def prepare_corpus_dataframe(
         df:DataFrame = define_features(df=df, features_field_name=features_field_name)
 
     with time_block(block_name="clean_features"):
-        df:DataFrame = clean_features(df=df)
-
-    with time_block(block_name="drop_invalid_data"):
-        df:DataFrame = drop_invalid_data(df=df, label_code_name=label_code)
-        print(f"Dataframe shape after fatures clean: {df.shape}")
+        df:DataFrame = clean_features(df=df, features_field_name=features_field_name)
 
     with time_block(block_name="drop_repeated_features"):
-        df:DataFrame = drop_repeated_features(df=df)
+        df:DataFrame = drop_repeated_features(df=df, features_field_name=features_field_name)
         print(f"Dataframe shape after drop_repeated_features: {df.shape}")
 
     with time_block(block_name="drop_invalid_features_data"):
-        df:DataFrame = drop_invalid_features_data(df=df)
+        df:DataFrame = drop_invalid_features_data(df=df, features_field_name=features_field_name)
         print(f"Dataframe shape after drop_invalid_features_data: {df.shape}")
         
     with time_block(block_name="get_minimal_corpus_dataframe"):
-        df:DataFrame = get_minimal_corpus_dataframe(df=df)
+        df:DataFrame = get_minimal_corpus_dataframe(df=df, features_field_name=features_field_name)
 
     with time_block(block_name="format_fasttext_train_data"):
-        format_fasttext(df=df, path=corpus_ft_path)
+        format_fasttext(df=df, path=corpus_ft_path, features_field_name=features_field_name)
         
     from ggd_py_utils.machine_learning.data.corpus_metrics import get_words_and_subwords_counts
     

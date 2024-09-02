@@ -86,7 +86,7 @@ def features_concatenation(df:DataFrame, features_fields:list):
     
     return df
 
-def clean_features(df:DataFrame) -> DataFrame:
+def clean_features(df:DataFrame, features_field_name:str="Features") -> DataFrame:
     """
     Clean the features column by applying the clean_text function to each value.
     
@@ -102,7 +102,7 @@ def clean_features(df:DataFrame) -> DataFrame:
     """
     from ggd_py_utils.machine_learning.data.cleaning import clean_text
     
-    df["Features"] = df["Features"].apply(func=lambda x: clean_text(text=x))
+    df[features_field_name] = df[features_field_name].apply(func=lambda x: clean_text(text=x))
     
     return df
     
@@ -128,7 +128,7 @@ def drop_invalid_data(df:DataFrame, label_code_name:str) -> DataFrame:
     
     return df
 
-def drop_repeated_features(df:DataFrame, inplace:bool=True):
+def drop_repeated_features(df:DataFrame, features_field_name:str="Features", inplace:bool=True):
     """
     Drop all rows in the DataFrame where the value in the "Features" column
     already exists.
@@ -146,11 +146,11 @@ def drop_repeated_features(df:DataFrame, inplace:bool=True):
         The modified DataFrame.
     """
     
-    df.drop_duplicates(subset="Features", inplace=inplace)
+    df.drop_duplicates(subset=features_field_name, inplace=inplace)
     
     return df
 
-def drop_invalid_features_data(df:DataFrame) -> DataFrame:
+def drop_invalid_features_data(df:DataFrame, features_field_name:str="Features") -> DataFrame:
     """Drop all rows in the DataFrame where the value in the "Features" column
     contains the strings 'prueba' or 'LINEA INTEGRADA' (case insensitive).
 
@@ -165,8 +165,8 @@ def drop_invalid_features_data(df:DataFrame) -> DataFrame:
         The modified DataFrame.
     """
 
-    df:DataFrame = df[~df['Features'].str.contains(pat='prueba', case=False, na=False)]
-    df:DataFrame = df[~df['Features'].str.contains(pat='LINEA INTEGRADA', case=False, na=False)]
+    df:DataFrame = df[~df[features_field_name].str.contains(pat='prueba', case=False, na=False)]
+    df:DataFrame = df[~df[features_field_name].str.contains(pat='LINEA INTEGRADA', case=False, na=False)]
     
     return df
 
