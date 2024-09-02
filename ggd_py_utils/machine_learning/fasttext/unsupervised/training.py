@@ -157,4 +157,10 @@ def reduce_fasttext_model(model:_FastText, target_dimension_percentage:float, re
     reduced_model: _FastText = reduce_model(ft_model=model, target_dim=target_dimension)
     model.save_model(path=reduced_model_file)
     
+    from ggd_py_utils.tracing.file import get_file_size
+    
+    _, model_size = get_file_size(filename=reduced_model_file)
+
+    print(f"Reduced model size: {model_size}")
+    
     return reduced_model
