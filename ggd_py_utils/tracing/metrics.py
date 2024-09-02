@@ -1,5 +1,31 @@
 from contextlib import contextmanager
 
+def human_friendly_time(elapsed_time:float) -> str:
+    """
+    Convert a time in seconds to a human-friendly string.
+
+    Parameters
+    ----------
+    elapsed_time : float
+        The time in seconds to convert.
+
+    Returns
+    -------
+    str
+        A string representing the time in a human-friendly format,
+        e.g. "1h 30m 45.67s" for 5445.67 seconds.
+
+    """
+    hours, rem = divmod(elapsed_time, 3600)
+    minutes, seconds = divmod(rem, 60)
+
+    if hours > 0:
+        return f"{int(hours)}h {int(minutes)}m {seconds:.2f}s"
+    elif minutes > 0:
+        return f"{int(minutes)}m {seconds:.2f}s"
+    else:
+        return f"{seconds:.2f}s"
+
 @contextmanager
 def time_block(block_name:str=""):
     """
@@ -24,12 +50,14 @@ def time_block(block_name:str=""):
     yield
     elapsed_time: float = time() - start_time
     
+    elapsed_time = human_friendly_time(elapsed_time=elapsed_time)
+    
     from colorama import Fore, Style
 
     if block_name:
         print(f"{Fore.CYAN}Trace: {block_name} -> {Fore.YELLOW}Time: {Fore.GREEN}{elapsed_time:.4f} seconds{Style.RESET_ALL}")
     else:
-        print(f"{Fore.YELLOW}Time: {Fore.GREEN}{elapsed_time:.4f} seconds{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}Took: {Fore.GREEN}{elapsed_time}{Style.RESET_ALL}")
 
     from chime import success, theme
     
