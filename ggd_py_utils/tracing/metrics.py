@@ -27,7 +27,7 @@ def human_friendly_time(elapsed_time:float) -> str:
         return f"{seconds:.2f}s"
 
 @contextmanager
-def time_block(block_name:str=""):
+def time_block(block_name:str=None):
     """
     Context manager to measure the execution time of a code block.
 
@@ -39,11 +39,8 @@ def time_block(block_name:str=""):
     block_name : str, optional
         The name of the block to be printed before the execution time.
 
+        
     """
-    from chime import theme
-
-    theme(name="mario")
-    
     from time import time
 
     start_time: float = time()
@@ -62,5 +59,7 @@ def time_block(block_name:str=""):
         print(f"Took: {elapsed_time_str}")
 
     from chime import success, theme
+    
+    theme(name="mario")
     
     success()
