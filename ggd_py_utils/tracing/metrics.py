@@ -18,13 +18,16 @@ def human_friendly_time(elapsed_time:float) -> str:
     """
     hours, rem = divmod(elapsed_time, 3600)
     minutes, seconds = divmod(rem, 60)
+    output: str = None
 
     if hours > 0:
-        return f"{int(hours)}h {int(minutes)}m {seconds:.2f}s"
+        output = f"{int(hours)}h {int(minutes)}m {seconds:.2f}s"
     elif minutes > 0:
-        return f"{int(minutes)}m {seconds:.2f}s"
+        output = f"{int(minutes)}m {seconds:.2f}s"
     else:
-        return f"{seconds:.2f}s"
+        output =f"{seconds:.2f}s"
+
+    return output
 
 @contextmanager
 def time_block(block_name:str=None):
