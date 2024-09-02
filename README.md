@@ -9,7 +9,6 @@ The package requires the following dependencies:
 * `unidecode==1.3.8`
 * `nltk==3.8.1`
 * `pandas==2.2.2`
-* `tqdm==4.66.2`
 * `imbalanced-learn==0.12.3`
 * `scikit-learn==1.5.0`
 * `colorama==0.4.6`
