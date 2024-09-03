@@ -70,7 +70,8 @@ def semantic_search(
         index:object, 
         df:DataFrame,
         k:int=3,
-        fields_to_project: list[str] = None
+        fields_to_project:list[str] = None,
+        return_embeddings:bool = False
     ):
     """
     Perform a semantic search using a FastText model.
@@ -89,6 +90,8 @@ def semantic_search(
         The number of results to return, by default 3.
     fields_to_project : list[str], optional
         The list of fields to project, by default None.
+    return_embeddings : bool, optional
+        Whether to return the embeddings, by default False.
 
     Returns
     -------
@@ -111,6 +114,9 @@ def semantic_search(
         if 'Similarity' not in fields_to_project:
             fields_to_project.append('Similarity')
         results = results[fields_to_project]
+        
+    if return_embeddings:
+        fields_to_project.append('Embeddings')
 
     _results = results.to_dict('records') 
 
