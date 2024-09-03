@@ -161,7 +161,8 @@ def prepare_corpus_dataframe(
         df:DataFrame, fields_to_clean:list, 
         corpus_ft_path:str, 
         features_field_name:str="Features", 
-        dimensions:int=300
+        dimensions:int=300,
+        ignore_features_fields:list=[]
     ):
     print(f"Initial Dataframe shape: {df.shape}")
     
@@ -172,7 +173,7 @@ def prepare_corpus_dataframe(
         print(f"Dataframe shape after first clean: {df.shape}")
 
     with time_block(block_name="define_features"):
-        df:DataFrame = define_features(df=df, features_field_name=features_field_name)
+        df:DataFrame = define_features(df=df, features_field_name=features_field_name, ignore=ignore_features_fields)
 
     with time_block(block_name="clean_features"):
         df:DataFrame = clean_features(df=df, features_field_name=features_field_name)
