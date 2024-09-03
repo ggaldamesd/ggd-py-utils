@@ -51,7 +51,8 @@ def semantic_search(
         model:_FastText, 
         index:object, 
         df:DataFrame,
-        k:int=3
+        k:int=3,
+        fields_to_project: list[str] = None
     ):
     """
     Perform a semantic search using a FastText model.
@@ -68,6 +69,8 @@ def semantic_search(
         The DataFrame containing the data to search.
     k : int, optional
         The number of results to return, by default 3.
+    fields_to_project : list[str], optional
+        The list of fields to project, by default None.
 
     Returns
     -------
@@ -84,8 +87,13 @@ def semantic_search(
     D, I = index.search(query_vector, k)
     
     results = df.iloc[I[0]].copy()
-    results['score'] = D[0]
+    results['Similarity'] = D[0]
 
-    _results = results.to_dict('records')    
+    if fields_to_project is not None:
+        if 'Similarity' not in fields_to_project:
+            fields_to_project.append('Similarity')
+        results = results[fields_to_project]
+
+    _results = results.to_dict('records') 
 
     return _results
