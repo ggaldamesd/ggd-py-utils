@@ -24,7 +24,7 @@ def clean_dataframe(df:DataFrame, fields:list, inplace:bool=True) -> DataFrame:
     
     return df
 
-def define_features(df:DataFrame, features_field_name:str="Features", ignore:list=[]) -> DataFrame:
+def define_features(df:DataFrame, features_field_name:str="Features", ignore:list=[], only_return_features:bool=False) -> DataFrame:
     """
     Define a new column in the DataFrame with the given name containing the
     concatenation of all string columns in the DataFrame, separated by a space.
@@ -37,6 +37,8 @@ def define_features(df:DataFrame, features_field_name:str="Features", ignore:lis
         The name of the new column, by default "Features".
     ignore : list, optional
         A list of column names to ignore, by default [].
+    only_return_features : bool, optional
+        Whether to return only the new column with the features, by default False.
 
     Returns
     -------
@@ -44,7 +46,7 @@ def define_features(df:DataFrame, features_field_name:str="Features", ignore:lis
         The modified DataFrame.
     """
     df[features_field_name] = df.apply(lambda row: " ".join([str(row[col]) for col in df.columns if col not in ignore and isinstance(row[col], str)]), axis=1)
-    df = df[[features_field_name]]
+    if only_return_features: df = df[[features_field_name]]
     
     return df
 
@@ -174,7 +176,7 @@ def prepare_corpus_dataframe(
         print(f"Dataframe shape after first clean: {df.shape}")
 
     with time_block(block_name="define_features"):
-        df:DataFrame = define_features(df=df, features_field_name=features_field_name, ignore=ignore_features_fields)
+        df:DataFrame = define_features(df=df, features_field_name=features_field_name, ignore=ignore_features_fields, only_return_features=True)
 
     with time_block(block_name="clean_features"):
         df:DataFrame = clean_features(df=df, features_field_name=features_field_name)
