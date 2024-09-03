@@ -75,6 +75,18 @@ def embed_dataframe(
         from faiss import write_index
 
         write_index(index, faiss_index_file)
+        
+        from ggd_py_utils.tracing.file import get_file_size
+    
+        _, faiss_index_size = get_file_size(filename=faiss_index_file)
+
+        print(f"FAISS index size: {faiss_index_size}")
     
     with time_block(block_name="Save DataFrame"):
         df.to_pickle(path=df_data_file)
+        
+        from ggd_py_utils.tracing.file import get_file_size
+    
+        _, df_data_file_size = get_file_size(filename=df_data_file)
+
+        print(f"DataFrame size: {df_data_file_size}")
