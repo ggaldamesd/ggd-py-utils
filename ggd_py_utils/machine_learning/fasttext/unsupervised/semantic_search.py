@@ -109,14 +109,14 @@ def semantic_search(
     
     results = df.iloc[I[0]].copy()
     results['Similarity'] = D[0]
+    
+    if not return_embeddings:
+        results.drop(columns=['Embeddings'], inplace=True)
 
     if fields_to_project is not None:
         if 'Similarity' not in fields_to_project:
             fields_to_project.append('Similarity')
         results = results[fields_to_project]
-        
-    if return_embeddings:
-        fields_to_project.append('Embeddings')
 
     _results = results.to_dict('records') 
 
