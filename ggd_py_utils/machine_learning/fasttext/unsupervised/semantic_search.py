@@ -35,14 +35,32 @@ def load_resources(
         from fasttext import load_model
         
         model:_FastText = load_model(path=fasttext_model_path)
+        
+        from ggd_py_utils.tracing.file import get_file_size
+    
+        _, fasttext_model_path_size = get_file_size(filename=fasttext_model_path)
+
+        print(f"FastText model size: {fasttext_model_path_size}")
     
     with time_block(block_name="Load Faiss index"):
         from faiss import read_index
         faiss_index = read_index(faiss_index_file)
+        
+        from ggd_py_utils.tracing.file import get_file_size
+    
+        _, faiss_index_file_size = get_file_size(filename=faiss_index_file)
+
+        print(f"FAISS index size: {faiss_index_file_size}")
     
     with time_block(block_name="Load DataFrame"):
         from pandas import read_pickle, DataFrame
         df:DataFrame = read_pickle(filepath_or_buffer=df_data_file)
+        
+        from ggd_py_utils.tracing.file import get_file_size
+    
+        _, df_data_file_size = get_file_size(filename=df_data_file)
+
+        print(f"DataFrame size: {df_data_file_size}")
     
     return model, faiss_index, df
 
