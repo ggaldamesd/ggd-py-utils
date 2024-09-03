@@ -6,14 +6,10 @@ The `ggd-py-utils` package is a collection of reusable utilities for Python proj
 
 The package requires the following dependencies:
 
+* `faiss-cpu==1.8.0`
 * `unidecode==1.3.8`
-* `nltk==3.8.1`
-* `pandas==2.2.2`
-* `imbalanced-learn==0.12.3`
-* `scikit-learn==1.5.0`
 * `colorama==0.4.6`
 * `chime==0.7.0`
-* `numpy==1.26.4`
 * `fasttext-wheel==0.9.2`
 
 **Installation**

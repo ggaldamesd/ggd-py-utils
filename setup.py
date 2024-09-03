@@ -24,6 +24,7 @@ setup(
         # "imbalanced-learn==0.12.3",
         # "scikit-learn==1.5.0",
         # "numpy==1.26.4",
+        "faiss-cpu==1.8.0",
         "unidecode==1.3.8",
         "colorama==0.4.6",
         "chime==0.7.0",
