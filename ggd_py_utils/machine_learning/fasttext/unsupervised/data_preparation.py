@@ -44,6 +44,7 @@ def define_features(df:DataFrame, features_field_name:str="Features", ignore:lis
         The modified DataFrame.
     """
     df[features_field_name] = df.apply(lambda x: " ".join([str(i) for i in x if isinstance(i, str) and i not in ignore]), axis=1)
+    df = df[[features_field_name]]
     
     return df
 
