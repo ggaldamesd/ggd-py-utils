@@ -10,7 +10,7 @@ def embed_dataframe(
         ingore_features_columns:list, 
         model:_FastText,
         features_field_name:str="Features"
-    ) -> DataFrame:
+    ):
     
     """
     Embed a DataFrame using a FastText model, and save the DataFrame with the embeddings to a file, and the Faiss index to another file.
@@ -32,8 +32,7 @@ def embed_dataframe(
 
     Returns
     -------
-    DataFrame
-        The DataFrame with the embeddings and the Faiss index.
+    None
     """
     
     with time_block(block_name="Read Parquet"):
@@ -79,5 +78,3 @@ def embed_dataframe(
     
     with time_block(block_name="Save DataFrame"):
         df.to_pickle(path=df_data_file)
-    
-    return df, index
