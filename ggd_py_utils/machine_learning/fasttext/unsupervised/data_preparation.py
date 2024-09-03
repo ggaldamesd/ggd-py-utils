@@ -191,6 +191,7 @@ def prepare_corpus_dataframe(
         df:DataFrame = get_minimal_corpus_dataframe(df=df, features_field_name=features_field_name)
 
     with time_block(block_name="format_fasttext_train_data"):
+        print(f"Dataframe info: {df.info()}")
         format_fasttext(df=df, path=corpus_ft_path, features_field_name=features_field_name)
         
     from ggd_py_utils.machine_learning.data.corpus_metrics import get_words_and_subwords_counts
