@@ -107,8 +107,10 @@ def semantic_search(
     
     D, I = index.search(query_vector, k)
     
+    normalized_similarity = (D[0] + 1) / 2
+    
     results = df.iloc[I[0]].copy()
-    results['Similarity'] = D[0]
+    results['Similarity'] = normalized_similarity
     
     if not return_embeddings:
         results.drop(columns=['Embeddings'], inplace=True)
