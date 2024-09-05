@@ -165,6 +165,7 @@ def prepare_corpus_dataframe(
         corpus_ft_path:str, 
         features_field_name:str="Features", 
         dimensions:int=300,
+        ngram_range:tuple=(2, 6),
         ignore_features_fields:list=[]
     ):
     print(f"Initial Dataframe shape: {df.shape}")
@@ -197,7 +198,7 @@ def prepare_corpus_dataframe(
         
     from ggd_py_utils.machine_learning.data.corpus_metrics import get_words_and_subwords_counts
     
-    words_and_subwords_counts:dict = get_words_and_subwords_counts(filename=corpus_ft_path)
+    words_and_subwords_counts:dict = get_words_and_subwords_counts(filename=corpus_ft_path, ngram_range=ngram_range)
 
     words:int = words_and_subwords_counts["words"]
     subwords:int = words_and_subwords_counts["subwords"]
