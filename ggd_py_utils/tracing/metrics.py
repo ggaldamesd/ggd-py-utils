@@ -35,7 +35,7 @@ def human_friendly_time(elapsed_time:float) -> str:
     return output
 
 @contextmanager
-def time_block(block_name:str=None):
+def time_block(block_name:str=None, should_beep:bool=False):
     """
     Context manager to measure the execution time of a code block.
 
@@ -66,8 +66,9 @@ def time_block(block_name:str=None):
         elapsed_time_output:str = "{}Took: {}{}{}".format(Fore.YELLOW, Fore.GREEN, elapsed_time_str, Style.RESET_ALL)
         print(elapsed_time_output)
 
-    from chime import success, theme
-    
-    theme(name="mario")
-    
-    success()
+    if should_beep:
+        from chime import success, theme
+        
+        theme(name="mario")
+        
+        success()
