@@ -10,7 +10,7 @@ def embed_dataframe(
         ingore_features_columns:list, 
         model:_FastText,
         features_field_name:str="Features"
-    ):
+    ) -> DataFrame:
     
     """
     Embed a DataFrame using a FastText model, and save the DataFrame with the embeddings to a file, and the Faiss index to another file.
@@ -32,7 +32,7 @@ def embed_dataframe(
 
     Returns
     -------
-    None
+    The vectorized Dataframe.
     """
     
     with time_block(block_name="Read Parquet"):
@@ -90,3 +90,5 @@ def embed_dataframe(
         _, df_data_file_size = get_file_size(filename=df_data_file)
 
         print(f"DataFrame size: {df_data_file_size}")
+
+    return df
