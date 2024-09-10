@@ -17,7 +17,8 @@ def plot_embeddings_with_search(
     metadata_fields: list[str] = [],
     k:int = 50,
     color_map:str = "random",
-    plot_in_3d:bool = False
+    plot_in_3d:bool = False,
+    title:str = None
 ) -> None:
     """
     Visualizes embeddings from a DataFrame using PCA for dimensionality reduction 
@@ -57,6 +58,9 @@ def plot_embeddings_with_search(
     
     plot_in_3d : bool, optional (default=False)
         If True, the plot will be in 3D; otherwise, it will be 2D.
+
+    title : str, optional (default=None)
+        The plot title.
 
     Returns:
     --------
@@ -195,7 +199,7 @@ def plot_embeddings_with_search(
     fig.add_trace(search_scatter)
 
     fig.update_layout(
-        title="Espacio Vectorial de Productos",
+        title=title,
         showlegend=False,
         width=800,
         height=600
