@@ -3,13 +3,13 @@ from plotly.graph_objects import Figure, Scatter3d, Scatter
 from scipy.spatial.distance import cosine
 from ggd_py_utils.machine_learning.data.cleaning import clean_text
 from pandas import DataFrame, Series
-from typing import Type
 from numpy import ndarray, array
 from random import choice
+from fasttext.FastText import _FastText
 
 def plot_embeddings_with_search(
     df: DataFrame, 
-    model: Type[_FastText], 
+    model: _FastText, 
     search: str, 
     threshold: float = 0.5, 
     similarity_field_name: str = "Similarity",
@@ -30,7 +30,7 @@ def plot_embeddings_with_search(
     df : DataFrame
         A pandas DataFrame containing a column of embeddings and any other metadata.
     
-    model : Type[_FastText]
+    model : _FastText
         A FastText model used to generate the embedding vector for the search query.
     
     search : str
