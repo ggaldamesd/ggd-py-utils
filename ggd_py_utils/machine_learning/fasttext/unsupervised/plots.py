@@ -1,10 +1,4 @@
-from sklearn.decomposition import PCA
-from plotly.graph_objects import Figure, Scatter3d, Scatter
-from scipy.spatial.distance import cosine
-from ggd_py_utils.machine_learning.data.cleaning import clean_text
-from pandas import DataFrame, Series
-from numpy import ndarray, array
-from random import choice
+from pandas import DataFrame
 from fasttext.FastText import _FastText
 
 def plot_embeddings_with_search(
@@ -69,140 +63,167 @@ def plot_embeddings_with_search(
         embeddings to the search term, colored by similarity, along with the 
         search embedding.
     """
-    clean_search: str = clean_text(text=search)
-    search_embedding = model.get_sentence_vector(text=clean_search).tolist()
-    
-    df[similarity_field_name] = df[embedding_field_name].apply(lambda x: 1 - cosine(search_embedding, x))
-    min_sim, max_sim = df[similarity_field_name].min(), df[similarity_field_name].max()
-    df[similarity_field_name] = (df[similarity_field_name] - min_sim) / (max_sim - min_sim)
+    from ggd_py_utils.tracing.metrics import time_block
 
-    df_filtered: DataFrame = df[df[similarity_field_name] >= threshold].sort_values(similarity_field_name, ascending=False)
+    with time_block(block_name="Cleaning and Getting Embeddings."):
+        from ggd_py_utils.machine_learning.data.cleaning import clean_text
+
+        clean_search: str = clean_text(text=search)
+        search_embedding = model.get_sentence_vector(text=clean_search).tolist()
     
-    if df_filtered.empty:
-        print(f"No results found for search with threshold {threshold*100:.2f}: {search}")
-        return
-    
-    df_top: DataFrame = df_filtered.head(k)
+    with time_block(block_name="Calculating Cosine Similarities."):
+        from scipy.spatial.distance import cosine
+
+        df[similarity_field_name] = df[embedding_field_name].apply(lambda x: 1 - cosine(search_embedding, x))
+        min_sim, max_sim = df[similarity_field_name].min(), df[similarity_field_name].max()
+        df[similarity_field_name] = (df[similarity_field_name] - min_sim) / (max_sim - min_sim)
+
+    with time_block(block_name="Filtering Similarities by Threshold."):
+        df_filtered: DataFrame = df[df[similarity_field_name] >= threshold].sort_values(similarity_field_name, ascending=False)
+        
+        if df_filtered.empty:
+            print(f"No results found for search with threshold {threshold*100:.2f}: {search}")
+            return
+        
+        df_top: DataFrame = df_filtered.head(k)
     
     embeddings:list = df_top[embedding_field_name].values.tolist()
     n_components:int = 3 if plot_in_3d else 2
     
-    reducer = PCA(n_components=n_components, random_state=42)
-    
-    reduced_embeddings: ndarray = reducer.fit_transform(embeddings)
-    
-    search_embedding_reshaped: ndarray = array(search_embedding).reshape(1, -1)
-    reduced_search_embedding: ndarray = reducer.transform(search_embedding_reshaped)
-    
-    fig = Figure()
+    with time_block(block_name="Reducing Embeddings Dimensions."):
+        from sklearn.decomposition import PCA
 
-    color_maps:list = [
-        "Plasma_r",
-        "Viridis_r",
-        "Inferno_r",
-        "Turbo_r",
-        "Jet_r",
-        "RdBu_r",
-        "YlOrRd_r",
-        "Hot_r"
-    ]
+        reducer = PCA(n_components=n_components, random_state=42)
+        
+        from numpy import ndarray
+
+        reduced_embeddings: ndarray = reducer.fit_transform(embeddings)
     
-    _color_map = color_map
+        from numpy import array
+
+        search_embedding_reshaped: ndarray = array(search_embedding).reshape(1, -1)
+        reduced_search_embedding: ndarray = reducer.transform(search_embedding_reshaped)
     
-    if color_map in color_maps:
+    with time_block(block_name="Plotting."):
+        from plotly.graph_objects import Figure
+
+        fig = Figure()
+
+        color_maps:list = [
+            "Plasma_r",
+            "Viridis_r",
+            "Inferno_r",
+            "Turbo_r",
+            "Jet_r",
+            "RdBu_r",
+            "YlOrRd_r",
+            "Hot_r"
+        ]
+        
         _color_map = color_map
-    elif color_map == "random":
-        _color_map:str = choice(color_maps)
-    else:
-        _color_map = "YlOrRd"
-    
-    if metadata_fields:
-        hover_text: Series[str] = df_top.apply(
-            lambda row: ', '.join([f"{field}: {row[field]}" for field in metadata_fields]) + 
-                    f", Similitud: {row[similarity_field_name]*100:.2f}%", axis=1
-        ) 
-    else:
-        hover_text: Series[str] = df_top.apply(
-            lambda row: f"Similitud: {row[similarity_field_name]*100:.2f}%", axis=1
-        )
-    
-    similarity: ndarray = df_top[similarity_field_name].values
-    
-    if plot_in_3d:
-        scatter = Scatter3d(
-            x=reduced_embeddings[:, 0],
-            y=reduced_embeddings[:, 1],
-            z=reduced_embeddings[:, 2],
-            mode='markers',
-            marker=dict(
-                size=10 * similarity,
-                opacity=1,
-                color=similarity,
-                colorscale=_color_map,
-                colorbar=dict(
-                    orientation='h',
-                    title="Similitud",
-                ),
-                showscale=True
-            ),
-            text=hover_text,
-            textposition='top center'
-        )
         
-        search_scatter = Scatter3d(
-            x=[reduced_search_embedding[0][0]],
-            y=[reduced_search_embedding[0][1]],
-            z=[reduced_search_embedding[0][2]],
-            mode='markers+text',
-            marker=dict(
-                size=10, 
-                opacity=1,
-                color=[max(similarity)],
-            ),
-            text=[search],
-            textposition='top center'
-        )
-    else:
-        scatter = Scatter(
-            x=reduced_embeddings[:, 0],
-            y=reduced_embeddings[:, 1],
-            mode='markers',
-            marker=dict(
-                size=10 * similarity,
-                opacity=1,
-                color=similarity,
-                colorscale=_color_map,
-                colorbar=dict(
-                    orientation='h',
-                    title="Similitud",
-                ),
-                showscale=True
-            ),
-            text=hover_text,
-            textposition='top center'
-        )
+        if color_map in color_maps:
+            _color_map = color_map
+        elif color_map == "random":
+            from random import choice
+
+            _color_map:str = choice(color_maps)
+        else:
+            _color_map = "YlOrRd"
         
-        search_scatter = Scatter(
-            x=[reduced_search_embedding[0][0]],
-            y=[reduced_search_embedding[0][1]],
-            mode='markers+text',
-            marker=dict(
-                size=10, 
-                opacity=1,
-                color=[max(similarity)],
-            ),
-            text=[search],
-            textposition='top center'
+        if metadata_fields:
+            from pandas import Series
+
+            hover_text: Series[str] = df_top.apply(
+                lambda row: ', '.join([f"{field}: {row[field]}" for field in metadata_fields]) + 
+                        f", Similitud: {row[similarity_field_name]*100:.2f}%", axis=1
+            ) 
+        else:
+            hover_text: Series[str] = df_top.apply(
+                lambda row: f"Similitud: {row[similarity_field_name]*100:.2f}%", axis=1
+            )
+        
+        similarity: ndarray = df_top[similarity_field_name].values
+        
+        if plot_in_3d:
+            from plotly.graph_objects import Scatter3d
+
+            scatter = Scatter3d(
+                x=reduced_embeddings[:, 0],
+                y=reduced_embeddings[:, 1],
+                z=reduced_embeddings[:, 2],
+                mode='markers',
+                marker=dict(
+                    size=10 * similarity,
+                    opacity=1,
+                    color=similarity,
+                    colorscale=_color_map,
+                    colorbar=dict(
+                        orientation='h',
+                        title="Similitud",
+                    ),
+                    showscale=True
+                ),
+                text=hover_text,
+                textposition='top center'
+            )
+            
+            search_scatter = Scatter3d(
+                x=[reduced_search_embedding[0][0]],
+                y=[reduced_search_embedding[0][1]],
+                z=[reduced_search_embedding[0][2]],
+                mode='markers+text',
+                marker=dict(
+                    size=10, 
+                    opacity=1,
+                    color=[max(similarity)],
+                ),
+                text=[search],
+                textposition='top center'
+            )
+        else:
+            from plotly.graph_objects import Scatter
+
+            scatter = Scatter(
+                x=reduced_embeddings[:, 0],
+                y=reduced_embeddings[:, 1],
+                mode='markers',
+                marker=dict(
+                    size=10 * similarity,
+                    opacity=1,
+                    color=similarity,
+                    colorscale=_color_map,
+                    colorbar=dict(
+                        orientation='h',
+                        title="Similitud",
+                    ),
+                    showscale=True
+                ),
+                text=hover_text,
+                textposition='top center'
+            )
+            
+            search_scatter = Scatter(
+                x=[reduced_search_embedding[0][0]],
+                y=[reduced_search_embedding[0][1]],
+                mode='markers+text',
+                marker=dict(
+                    size=10, 
+                    opacity=1,
+                    color=[max(similarity)],
+                ),
+                text=[search],
+                textposition='top center'
+            )
+
+        fig.add_trace(scatter)
+        fig.add_trace(search_scatter)
+
+        fig.update_layout(
+            title=title,
+            showlegend=False,
+            width=800,
+            height=600
         )
 
-    fig.add_trace(scatter)
-    fig.add_trace(search_scatter)
-
-    fig.update_layout(
-        title=title,
-        showlegend=False,
-        width=800,
-        height=600
-    )
-
-    fig.show()
+        fig.show()
