@@ -11,6 +11,7 @@ The package requires the following dependencies:
 * `colorama==0.4.6`
 * `chime==0.7.0`
 * `fasttext-wheel==0.9.2`
+* `plotly==5.22.0`
 
 **Installation**
 
