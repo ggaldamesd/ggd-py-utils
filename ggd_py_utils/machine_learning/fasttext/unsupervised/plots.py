@@ -335,6 +335,14 @@ def plot_embeddings_with_search(
         
         similarity: ndarray = df_top[similarity_field_name].values
  
+        best_nodes: DataFrame = df_top.nlargest(1, similarity_field_name)
+        best_node_index = best_nodes.index[0]
+        best_node_embedding:ndarray = reduced_embeddings[df_top.index.get_loc(best_node_index)]
+
+        x_best = best_node_embedding[0] + zoom_factor
+        y_best = best_node_embedding[1] + zoom_factor
+        z_best = best_node_embedding[2] + zoom_factor if plot_in_3d else None
+
         if plot_in_3d:
             from plotly.graph_objects import Scatter3d
 
@@ -354,6 +362,22 @@ def plot_embeddings_with_search(
                         tickformat=".0%"
                     ),
                     showscale=True
+                ),
+                text=hover_text,
+                textposition='top center',
+                hoverinfo='text'
+            )
+
+            highlighted_scatter = Scatter3d(
+                x=[best_node_embedding[0]],
+                y=[best_node_embedding[1]],
+                z=[best_node_embedding[2]],
+                mode='markers',
+                marker=dict(
+                    size=15,
+                    color='green',
+                    opacity=1,
+                    symbol='x'
                 ),
                 text=hover_text,
                 textposition='top center',
@@ -382,15 +406,22 @@ def plot_embeddings_with_search(
                 textposition='top center',
                 hoverinfo='text'
             )
+
+            highlighted_scatter = Scatter(
+                x=[best_node_embedding[0]],
+                y=[best_node_embedding[1]],
+                mode='markers',
+                marker=dict(
+                    size=15,
+                    color='green',
+                    opacity=1,
+                    symbol='x'
+                ),
+                text=hover_text,
+                textposition='top center',
+                hoverinfo='text'
+            )
             
-        best_nodes: DataFrame = df_top.nlargest(1, similarity_field_name)
-        best_node_index = best_nodes.index[0]
-        best_node_embedding:ndarray = reduced_embeddings[df_top.index.get_loc(best_node_index)]
-
-        x_best = best_node_embedding[0] + zoom_factor
-        y_best = best_node_embedding[1] + zoom_factor
-        z_best = best_node_embedding[2] + zoom_factor if plot_in_3d else None
-
         scene_camera = dict(
             eye=dict(
                 x=x_best,
