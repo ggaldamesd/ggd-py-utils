@@ -12,7 +12,9 @@ def plot_embeddings_with_search(
     k:int = 50,
     color_map:str = "random",
     plot_in_3d:bool = False,
-    title:str = None
+    show_in_browser:bool = False,
+    title:str = None,
+    zoom_factor:float = 0.5
 ) -> None:
     """
     Visualizes embeddings from a DataFrame using PCA for dimensionality reduction 
@@ -20,6 +22,10 @@ def plot_embeddings_with_search(
     calculating the cosine similarity between the search embedding and the 
     embeddings in the DataFrame.
 
+    Displays an interactive 2D or 3D plot showing the top `k` similar 
+    embeddings to the search term, colored by similarity, along with the 
+    search embedding.
+    
     Parameters:
     -----------
     df : DataFrame
@@ -55,13 +61,16 @@ def plot_embeddings_with_search(
 
     title : str, optional (default=None)
         The plot title.
+        
+    show_in_browser : str, optional (default=False)
+        If True, the plot will be displayed in the browser.
+        
+    zoom_factor : float, optional (default=0.5)
+        The zoom factor to use when displaying the plot.
 
     Returns:
     --------
     None
-        Displays an interactive 2D or 3D plot showing the top `k` similar 
-        embeddings to the search term, colored by similarity, along with the 
-        search embedding.
     """
     from ggd_py_utils.tracing.metrics import time_block
 
@@ -110,14 +119,194 @@ def plot_embeddings_with_search(
         fig = Figure()
 
         color_maps:list = [
-            "Plasma_r",
-            "Viridis_r",
-            "Inferno_r",
-            "Turbo_r",
-            "Jet_r",
-            "RdBu_r",
-            "YlOrRd_r",
-            "Hot_r"
+            "aggrnyl", 
+            "agsunset", 
+            "algae", 
+            "amp", 
+            "armyrose", 
+            "balance", 
+            "blackbody", 
+            "bluered",
+            "blues",
+            "blugrn",
+            "bluyl",
+            "brbg",
+            "brwnyl",
+            "bugn", 
+            "bupu", 
+            "burg", 
+            "burgyl", 
+            "cividis", 
+            "curl", 
+            "darkmint", 
+            "deep", 
+            "delta", 
+            "dense", 
+            "earth", 
+            "edge", 
+            "electric", 
+            "emrld", 
+            "fall", 
+            "geyser", 
+            "gnbu", 
+            "gray", 
+            "greens", 
+            "greys", 
+            "haline", 
+            "hot", 
+            "hsv", 
+            "ice", 
+            "icefire", 
+            "inferno", 
+            "jet", 
+            "magenta", 
+            "magma", 
+            "matter", 
+            "mint", 
+            "mrybm", 
+            "mygbm", 
+            "oranges", 
+            "orrd", 
+            "oryel", 
+            "oxy",
+            "peach", 
+            "phase", 
+            "picnic", 
+            "pinkyl", 
+            "piyg", 
+            "plasma", 
+            "plotly3", 
+            "portland", 
+            "prgn", 
+            "pubu", 
+            "pubugn", 
+            "puor", 
+            "purd", 
+            "purp", 
+            "purples", 
+            "purpor", 
+            "rainbow", 
+            "rdbu", 
+            "rdgy", 
+            "rdpu", 
+            "rdylbu", 
+            "rdylgn", 
+            "redor", 
+            "reds", 
+            "solar", 
+            "spectral", 
+            "speed", 
+            "sunset", 
+            "sunsetdark", 
+            "teal", 
+            "tealgrn", 
+            "tealrose", 
+            "tempo", 
+            "temps", 
+            "thermal", 
+            "tropic", 
+            "turbid", 
+            "turbo", 
+            "twilight", 
+            "viridis", 
+            "ylgn", 
+            "ylgnbu", 
+            "ylorbr", 
+            "ylorrd",
+            "aggrnyl_r", 
+            "agsunset_r", 
+            "algae_r", 
+            "amp_r", 
+            "armyrose_r", 
+            "balance_r", 
+            "blackbody_r", 
+            "bluered_r",
+            "blues_r",
+            "blugrn_r",
+            "bluyl_r",
+            "brbg_r",
+            "brwnyl_r",
+            "bugn_r", 
+            "bupu_r", 
+            "burg_r", 
+            "burgyl_r", 
+            "cividis_r", 
+            "curl_r", 
+            "darkmint_r", 
+            "deep_r", 
+            "delta_r", 
+            "dense_r", 
+            "earth_r", 
+            "edge_r", 
+            "electric_r", 
+            "emrld_r", 
+            "fall_r", 
+            "geyser_r", 
+            "gnbu_r", 
+            "gray_r", 
+            "greens_r", 
+            "greys_r", 
+            "haline_r", 
+            "hot_r", 
+            "hsv_r", 
+            "ice_r", 
+            "icefire_r", 
+            "inferno_r", 
+            "jet_r", 
+            "magenta_r", 
+            "magma_r", 
+            "matter_r", 
+            "mint_r", 
+            "mrybm_r", 
+            "mygbm_r", 
+            "oranges_r", 
+            "orrd_r", 
+            "oryel_r", 
+            "oxy_r",
+            "peach_r", 
+            "phase_r", 
+            "picnic_r", 
+            "pinkyl_r", 
+            "piyg_r", 
+            "plasma_r", 
+            "plotly3_r", 
+            "portland_r", 
+            "prgn_r", 
+            "pubu_r", 
+            "pubugn_r", 
+            "puor_r", 
+            "purd_r", 
+            "purp_r", 
+            "purples_r", 
+            "purpor_r", 
+            "rainbow_r", 
+            "rdbu_r", 
+            "rdgy_r", 
+            "rdpu_r", 
+            "rdylbu_r", 
+            "rdylgn_r", 
+            "redor_r", 
+            "reds_r", 
+            "solar_r", 
+            "spectral_r", 
+            "speed_r", 
+            "sunset_r", 
+            "sunsetdark_r", 
+            "teal_r", 
+            "tealgrn_r", 
+            "tealrose_r", 
+            "tempo_r", 
+            "temps_r", 
+            "thermal_r", 
+            "tropic_r", 
+            "turbid_r", 
+            "turbo_r", 
+            "twilight_r", 
+            "viridis_r", 
+            "ylgn_r", 
+            "ylgnbu_r", 
+            "ylorbr_r", 
+            "ylorrd_r"
         ]
         
         _color_map = color_map
@@ -128,15 +317,16 @@ def plot_embeddings_with_search(
             from random import choice
 
             _color_map:str = choice(color_maps)
+            print(_color_map)
         else:
-            _color_map = "YlOrRd"
+            _color_map = "plasma_r"
         
         if metadata_fields:
             from pandas import Series
 
             hover_text: Series[str] = df_top.apply(
-                lambda row: ', '.join([f"{field}: {row[field]}" for field in metadata_fields]) + 
-                        f", Similitud: {row[similarity_field_name]*100:.2f}%", axis=1
+                lambda row: '<br>'.join([f"{field}: {row[field]}" for field in metadata_fields]) + 
+                        f"<br>Similitud: {row[similarity_field_name]*100:.2f}%", axis=1
             ) 
         else:
             hover_text: Series[str] = df_top.apply(
@@ -144,7 +334,7 @@ def plot_embeddings_with_search(
             )
         
         similarity: ndarray = df_top[similarity_field_name].values
-        
+ 
         if plot_in_3d:
             from plotly.graph_objects import Scatter3d
 
@@ -161,25 +351,13 @@ def plot_embeddings_with_search(
                     colorbar=dict(
                         orientation='h',
                         title="Similitud",
+                        tickformat=".0%"
                     ),
                     showscale=True
                 ),
                 text=hover_text,
-                textposition='top center'
-            )
-            
-            search_scatter = Scatter3d(
-                x=[reduced_search_embedding[0][0]],
-                y=[reduced_search_embedding[0][1]],
-                z=[reduced_search_embedding[0][2]],
-                mode='markers+text',
-                marker=dict(
-                    size=10, 
-                    opacity=1,
-                    color=[max(similarity)],
-                ),
-                text=[search],
-                textposition='top center'
+                textposition='top center',
+                hoverinfo='text'
             )
         else:
             from plotly.graph_objects import Scatter
@@ -196,34 +374,64 @@ def plot_embeddings_with_search(
                     colorbar=dict(
                         orientation='h',
                         title="Similitud",
+                        tickformat='.0%'
                     ),
                     showscale=True
                 ),
                 text=hover_text,
-                textposition='top center'
+                textposition='top center',
+                hoverinfo='text'
             )
             
-            search_scatter = Scatter(
-                x=[reduced_search_embedding[0][0]],
-                y=[reduced_search_embedding[0][1]],
-                mode='markers+text',
-                marker=dict(
-                    size=10, 
-                    opacity=1,
-                    color=[max(similarity)],
-                ),
-                text=[search],
-                textposition='top center'
-            )
+        best_nodes: DataFrame = df_top.nlargest(1, similarity_field_name)
+        best_node_index = best_nodes.index[0]
+        best_node_embedding:ndarray = reduced_embeddings[df_top.index.get_loc(best_node_index)]
+
+        x_best = best_node_embedding[0] + zoom_factor
+        y_best = best_node_embedding[1] + zoom_factor
+        z_best = best_node_embedding[2] + zoom_factor if plot_in_3d else None
+
+        scene_camera = dict(
+            eye=dict(
+                x=x_best,
+                y=y_best,
+                z=z_best
+            ),
+            center=dict(
+                x=best_node_embedding[0],
+                y=best_node_embedding[1],
+                z=best_node_embedding[2] if plot_in_3d else None
+            ),
+            projection=dict(type='perspective')
+        )
 
         fig.add_trace(scatter)
-        fig.add_trace(search_scatter)
+
+        scene_axis = dict(
+            backgroundcolor='white',
+            title="", 
+            showticklabels=False, 
+            showgrid=False,
+            showline=False, 
+            zeroline=False,
+            tickvals=[],
+            ticktext=[],
+            ticks=""
+        )
 
         fig.update_layout(
             title=title,
             showlegend=False,
             width=800,
-            height=600
+            height=600,
+            scene_camera=scene_camera,
+            plot_bgcolor="white",
+            paper_bgcolor="white",
+            scene=dict(
+                xaxis=scene_axis,
+                yaxis=scene_axis,
+                zaxis=scene_axis if plot_in_3d else None
+            )
         )
 
-        fig.show()
+        fig.show(renderer="browser" if show_in_browser else None)
