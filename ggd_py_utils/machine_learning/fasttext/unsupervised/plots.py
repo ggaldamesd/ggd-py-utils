@@ -4,13 +4,13 @@ from fasttext.FastText import _FastText
 def plot_embeddings_with_search(
     df: DataFrame, 
     model: _FastText, 
-    search: str, 
+    search_text: str, 
     threshold: float = 0.5, 
     similarity_field_name: str = "Similarity",
     embedding_field_name: str = "Embeddings",
     metadata_fields: list[str] = [],
     k:int = 50,
-    color_map:str = "random",
+    color_map:str = "plasma_r",
     plot_in_3d:bool = False,
     show_in_browser:bool = False,
     title:str = None,
@@ -25,59 +25,61 @@ def plot_embeddings_with_search(
     Displays an interactive 2D or 3D plot showing the top `k` similar 
     embeddings to the search term, colored by similarity, along with the 
     search embedding.
-    
-    Parameters:
-    -----------
-    df : DataFrame
-        A pandas DataFrame containing a column of embeddings and any other metadata.
-    
-    model : _FastText
-        A FastText model used to generate the embedding vector for the search query.
-    
-    search : str
-        The search term to compare against the embeddings in the DataFrame.
-    
-    threshold : float, optional (default=0.5)
-        The minimum similarity score required to include a result in the final plot.
-    
-    similarity_field_name : str, optional (default="Similarity")
-        The name of the field where similarity scores will be stored.
-    
-    embedding_field_name : str, optional (default="Embeddings")
-        The name of the column in the DataFrame that contains the embedding vectors.
-    
-    metadata_fields : list[str], optional (default=[])
-        A list of field names from the DataFrame to include as hover text in the plot.
-    
-    k : int, optional (default=50)
-        The maximum number of top similar embeddings to display.
-    
-    color_map : str, optional (default="random")
-        The color map used for visualizing similarity in the plot. Can be one of 
-        the predefined maps or "random" to choose a random one.
-    
-    plot_in_3d : bool, optional (default=False)
-        If True, the plot will be in 3D; otherwise, it will be 2D.
 
-    title : str, optional (default=None)
-        The plot title.
-        
-    show_in_browser : str, optional (default=False)
-        If True, the plot will be displayed in the browser.
-        
-    zoom_factor : float, optional (default=0.5)
-        The zoom factor to use when displaying the plot.
+    Args:
+        df (DataFrame): A pandas DataFrame containing a column of embeddings and any other metadata.
+        model (_FastText): A FastText model used to generate the embedding vector for the search query.
+        search_text (str): The search term to compare against the embeddings in the DataFrame.
+        threshold (float, optional): The minimum similarity score required to include a result in the final plot. Defaults to 0.5.
+        similarity_field_name (str, optional): The name of the field where similarity scores will be stored. Defaults to "Similarity".
+        embedding_field_name (str, optional): The name of the column in the DataFrame that contains the embedding vectors. Defaults to "Embeddings".
+        metadata_fields (list of str, optional): A list of field names from the DataFrame to include as hover text in the plot. Defaults to an empty list.
+        k (int, optional): The maximum number of top similar embeddings to display. Defaults to 50.
+        color_map (str, optional): The color map used for visualizing similarity in the plot. Can be one of the predefined maps or "random" to choose a random one. Defaults to "plasma_r".
+        plot_in_3d (bool, optional): If True, the plot will be in 3D; otherwise, it will be 2D. Defaults to False.
+        title (str, optional): The plot title. Defaults to None.
+        show_in_browser (bool, optional): If True, the plot will be displayed in the browser. Defaults to False.
+        zoom_factor (float, optional): The zoom factor to use when displaying the plot. Defaults to 0.5.
 
     Returns:
-    --------
-    None
+        None
+
+    Example:
+        >>> from ggd_py_utils.machine_learning.unsupervised.plots import plot_embeddings_with_search
+        >>> search_text = "clavo teja"
+        >>> plot_embeddings_with_search(
+        ...     df=df,
+        ...     model=model,
+        ...     threshold=0.01,
+        ...     search_text=search_text,
+        ...     metadata_fields=["NombreClase", "NombreProducto"],
+        ...     k=10000,
+        ...     color_map="plasma_r",
+        ...     plot_in_3d=True,
+        ...     show_in_browser=False,
+        ...     title="Espacio Vectorial de Productos y Categorías UNSPSC",
+        ...     zoom_factor=0.99
+        ... )
+        >>> plot_embeddings_with_search(
+        ...     df=df,
+        ...     model=model,
+        ...     threshold=0.5,
+        ...     search_text=search_text,
+        ...     metadata_fields=["NombreClase", "NombreProducto"],
+        ...     k=1000,
+        ...     color_map="plasma_r",
+        ...     plot_in_3d=False,
+        ...     show_in_browser=False,
+        ...     title="Espacio Vectorial de Productos y Categorías UNSPSC",
+        ...     zoom_factor=0.99
+        ... )
     """
     from ggd_py_utils.tracing.metrics import time_block
 
     with time_block(block_name="Cleaning and Getting Embeddings."):
         from ggd_py_utils.machine_learning.data.cleaning import clean_text
 
-        clean_search: str = clean_text(text=search)
+        clean_search: str = clean_text(text=search_text)
         search_embedding = model.get_sentence_vector(text=clean_search).tolist()
     
     with time_block(block_name="Calculating Cosine Similarities."):
@@ -91,7 +93,7 @@ def plot_embeddings_with_search(
         df_filtered: DataFrame = df[df[similarity_field_name] >= threshold].sort_values(similarity_field_name, ascending=False)
         
         if df_filtered.empty:
-            print(f"No results found for search with threshold {threshold*100:.2f}: {search}")
+            print(f"No results found for search with threshold {threshold*100:.2f}: {search_text}")
             return
         
         df_top: DataFrame = df_filtered.head(k)
@@ -107,11 +109,6 @@ def plot_embeddings_with_search(
         from numpy import ndarray
 
         reduced_embeddings: ndarray = reducer.fit_transform(embeddings)
-    
-        from numpy import array
-
-        search_embedding_reshaped: ndarray = array(search_embedding).reshape(1, -1)
-        reduced_search_embedding: ndarray = reducer.transform(search_embedding_reshaped)
     
     with time_block(block_name="Plotting."):
         from plotly.graph_objects import Figure
@@ -334,10 +331,15 @@ def plot_embeddings_with_search(
             )
         
         similarity: ndarray = df_top[similarity_field_name].values
- 
+        
         best_nodes: DataFrame = df_top.nlargest(1, similarity_field_name)
         best_node_index = best_nodes.index[0]
         best_node_embedding:ndarray = reduced_embeddings[df_top.index.get_loc(best_node_index)]
+
+        best_node_pos = df_top.index.get_loc(best_node_index)
+        
+        from numpy import delete
+        reduced_embeddings = delete(reduced_embeddings, best_node_pos, axis=0)
 
         x_best = best_node_embedding[0] + zoom_factor
         y_best = best_node_embedding[1] + zoom_factor
@@ -374,10 +376,10 @@ def plot_embeddings_with_search(
                 z=[best_node_embedding[2]],
                 mode='markers',
                 marker=dict(
-                    size=15,
+                    size=5,
                     color='green',
                     opacity=1,
-                    symbol='x'
+                    symbol='diamond'
                 ),
                 text=hover_text,
                 textposition='top center',
@@ -412,10 +414,10 @@ def plot_embeddings_with_search(
                 y=[best_node_embedding[1]],
                 mode='markers',
                 marker=dict(
-                    size=15,
+                    size=10,
                     color='green',
                     opacity=1,
-                    symbol='x'
+                    symbol='diamond'
                 ),
                 text=hover_text,
                 textposition='top center',
@@ -437,32 +439,63 @@ def plot_embeddings_with_search(
         )
 
         fig.add_trace(scatter)
+        fig.add_trace(highlighted_scatter)
 
-        scene_axis = dict(
-            backgroundcolor='white',
-            title="", 
-            showticklabels=False, 
-            showgrid=False,
-            showline=False, 
-            zeroline=False,
-            tickvals=[],
-            ticktext=[],
-            ticks=""
-        )
+        if plot_in_3d:
+            scene_axis_3d = dict(
+                backgroundcolor='white',
+                title="", 
+                showticklabels=False, 
+                showgrid=False,
+                showline=False, 
+                zeroline=False,
+                tickvals=[],
+                ticktext=[],
+                ticks=""
+            )
+        
+        if not plot_in_3d:
+            x_scene_axis_2d = dict(
+                title="", 
+                showticklabels=False, 
+                showgrid=False,
+                showline=False, 
+                zeroline=False,
+                tickvals=[],
+                ticktext=[],
+                ticks="",
+                # range=[x_best - 0.1, x_best + 0.1]
+            )
+            
+            y_scene_axis_2d = dict(
+                title="", 
+                showticklabels=False, 
+                showgrid=False,
+                showline=False, 
+                zeroline=False,
+                tickvals=[],
+                ticktext=[],
+                ticks="",
+                # range=[y_best - 0.1, y_best + 0.1]
+            )
+
+        title = f"Espacio Vectorial para: <b>{search_text}</b>" if None else f"{title} para: <b>{search_text}</b>"
 
         fig.update_layout(
             title=title,
             showlegend=False,
             width=800,
             height=600,
-            scene_camera=scene_camera,
+            scene_camera=scene_camera if plot_in_3d else None,
             plot_bgcolor="white",
             paper_bgcolor="white",
+            xaxis=x_scene_axis_2d if not plot_in_3d else None,
+            yaxis=y_scene_axis_2d if not plot_in_3d else None,
             scene=dict(
-                xaxis=scene_axis,
-                yaxis=scene_axis,
-                zaxis=scene_axis if plot_in_3d else None
-            )
+                xaxis=scene_axis_3d,
+                yaxis=scene_axis_3d,
+                zaxis=scene_axis_3d 
+            ) if plot_in_3d else None
         )
 
         fig.show(renderer="browser" if show_in_browser else None)
