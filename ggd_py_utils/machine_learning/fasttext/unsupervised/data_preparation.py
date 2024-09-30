@@ -173,7 +173,7 @@ def prepare_corpus_dataframe(
     from ggd_py_utils.tracing.metrics import time_block
     
     with time_block(block_name="mix dataframe"):
-        df:DataFrame = df.sample(frec=1, random_state=42)
+        df:DataFrame = df.sample(frac=1, random_state=42, replace=True, n=7)
 
     with time_block(block_name="clean_dataframe"):
         df:DataFrame = clean_dataframe(df=df, fields=fields_to_clean, inplace=True)
