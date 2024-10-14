@@ -206,10 +206,17 @@ def prepare_corpus_dataframe(
     words:int = words_and_subwords_counts["words"]
     subwords:int = words_and_subwords_counts["subwords"]
     tokens:int = words + subwords
-    
+
     estimated_params:int = dimensions * tokens
     
     from ggd_py_utils.formating.numeric import abbreviate_large_number
+
+    words_formated:str = abbreviate_large_number(number=words)
+    subwords_formated:str = abbreviate_large_number(number=subwords)
+    tokens_formated:str = abbreviate_large_number(number=tokens)
+
+    print(f"Words: {words_formated}, Subwords: {subwords_formated}, Tokens: {tokens_formated}")
+
     estimated_params_formated:str = abbreviate_large_number(number=estimated_params)
 
     print(f"Estimated corpus parameters: {estimated_params} / {estimated_params_formated}")
